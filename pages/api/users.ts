@@ -1,17 +1,24 @@
-import type { NextApiRequest, NextApiResponse } from "next";
-import connectDB from "../../lib/mongoose";
-import User from "../../models/User";
+import { NextApiRequest, NextApiResponse } from "next";
+import jwt from "jsonwebtoken";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    await connectDB();
+export function authMiddleware(req: NextApiRequest, res: NextApiResponse) {
+    const auth = req.headers.authorization;
 
-    if (req.method === "GET") {
-        const users = await User.find();
-        return res.json(users);
+    if (!auth) {
+        return res.status(401).json({ message: "No token provided" });
     }
 
-    if (req.method === "POST") {
-        const user = await User.create(req.body);
-        return res.json(user);
+    const token = auth.split(" ")[1];
+
+    try {
+        const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET as string
+        );
+
+        (req as any).user = decoded;
+        return decoded;
+    } catch {
+        return res.status(401).json({ message: "Invalid token" });
     }
 }
