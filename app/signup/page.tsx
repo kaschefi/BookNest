@@ -1,5 +1,5 @@
 import AuthPageContent from "../../components/AuthPageContent";
 
-export default function LoginPage() {
+export default function SignupPage() {
   return <AuthPageContent />;
 }
