@@ -17,19 +17,24 @@ export default NextAuth({
 
     callbacks: {
         async signIn({ user }) {
-            await connectDB();
+            try {
+                await connectDB();
 
-            const existing = await User.findOne({ email: user.email });
+                const existing = await User.findOne({ email: user.email });
 
-            if (!existing) {
-                await User.create({
-                    name: user.name,
-                    email: user.email,
-                    role: "user",
-                });
+                if (!existing) {
+                    await User.create({
+                        name: user.name || "GitHub User",
+                        email: user.email,
+                        role: "user",
+                    });
+                }
+
+                return true;
+            } catch (error) {
+                console.error("NextAuth signIn Error:", error);
+                return false;
             }
-
-            return true;
         },
 
         async jwt({ token, user }) {

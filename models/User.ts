@@ -14,7 +14,7 @@ const UserSchema = new mongoose.Schema({
 
     email: { type: String, required: true, unique: true },
 
-    password: { type: String, required: true },
+    password: { type: String, required: false },
 
     role: {
         type: String,
@@ -23,4 +23,9 @@ const UserSchema = new mongoose.Schema({
     }
 });
 
-export default mongoose.models.User || mongoose.model("User", UserSchema);
+// Delete cached model to ensure schema updates apply during hot-reload
+if (mongoose.models.User) {
+    delete mongoose.models.User;
+}
+
+export default mongoose.model("User", UserSchema);
