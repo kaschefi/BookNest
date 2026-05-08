@@ -23,6 +23,8 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+import { Providers } from "../components/Providers";
+
 export const metadata: Metadata = {
   title: "BookNest",
   description: "Books open minds. Knowledge shapes futures.",
@@ -38,7 +40,11 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${caveat.variable} ${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <Providers>
+          {children}
+        </Providers>
+      </body>
     </html>
   );
 }

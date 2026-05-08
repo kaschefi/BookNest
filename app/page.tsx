@@ -4,18 +4,28 @@ import Image from "next/image";
 import Link from "next/link";
 import Logo from "../components/Logo";
 import { useState, useEffect } from "react";
+import { useSession, signOut as nextAuthSignOut } from "next-auth/react";
 
 export default function Home() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { data: session, status } = useSession();
+  const [isJwtLoggedIn, setIsJwtLoggedIn] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
+    setIsJwtLoggedIn(!!token);
   }, []);
 
-  const handleSignOut = () => {
+  const isLoggedIn = isJwtLoggedIn || status === "authenticated";
+
+  const handleSignOut = async () => {
+    // Sign out from custom JWT
     localStorage.removeItem("token");
-    setIsLoggedIn(false);
+    setIsJwtLoggedIn(false);
+    
+    // Sign out from NextAuth if logged in via OAuth
+    if (status === "authenticated") {
+      await nextAuthSignOut({ redirect: false });
+    }
   };
   return (
     <div className="relative min-h-screen flex flex-col items-center overflow-x-hidden pt-4 px-8 pb-12">
