@@ -4,8 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { signIn } from "next-auth/react";
 import Logo from "./Logo";
+import AuthBackgroundDoodles from "./AuthBackgroundDoodles";
+import AuthSocialLogins from "./AuthSocialLogins";
+import { useAnimatedPen } from "../hooks/useAnimatedPen";
+import { useAuthForm } from "../hooks/useAuthForm";
 
 export default function AuthPageContent() {
   const router = useRouter();
@@ -13,27 +16,9 @@ export default function AuthPageContent() {
   
   // Set initial state based on current path
   const [isLogin, setIsLogin] = useState(pathname === "/login");
-  
-  const [penPos, setPenPos] = useState({ x: 0, y: 0 });
-  const [isWriting, setIsWriting] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
-
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [repeatPassword, setRepeatPassword] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showRepeatPassword, setShowRepeatPassword] = useState(false);
-
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const penRef = useRef<HTMLDivElement>(null);
-  const defaultPenContainerRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // Sync state with pathname changes (e.g. back/forward button)
+  // Sync state with pathname changes
   useEffect(() => {
     setIsLogin(pathname === "/login");
   }, [pathname]);
@@ -41,13 +26,11 @@ export default function AuthPageContent() {
   const handleToggle = () => {
     const nextMode = !isLogin;
     setIsLogin(nextMode);
-    // Use pushState to update URL without full page reload
     const nextUrl = nextMode ? "/login" : "/signup";
     window.history.pushState(null, "", nextUrl);
   };
 
   useEffect(() => {
-    // Only scroll to the card when in Signup mode (!isLogin)
     if (!isLogin && cardRef.current) {
       setTimeout(() => {
         cardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -55,157 +38,33 @@ export default function AuthPageContent() {
     }
   }, [isLogin]);
 
-  // Function to calculate exact caret coordinates
-  const getCaretCoordinates = (inputElement: HTMLInputElement) => {
-    const { selectionStart } = inputElement;
+  // --- Hooks ---
+  const {
+    penPos, isWriting, isTyping, defaultPos, defaultPenContainerRef,
+    handleInputFocus, handleInputBlur, handleInputInteraction
+  } = useAnimatedPen([isLogin]);
 
-    // type="email" inputs don't support selectionStart in most browsers.
-    // Fall back to the end of the value string for the position.
-    const caretPos = selectionStart ?? inputElement.value.length;
+  const {
+    name, setName,
+    email, setEmail,
+    password, setPassword,
+    repeatPassword, setRepeatPassword,
+    error, success, loading,
+    showPassword, setShowPassword,
+    showRepeatPassword, setShowRepeatPassword,
+    handleSubmit
+  } = useAuthForm(isLogin);
 
-    // Create a ghost div
-    const ghost = document.createElement("div");
-    const style = window.getComputedStyle(inputElement);
-
-    // Copy all relevant styles
-    Array.from(style).forEach((prop) => {
-      ghost.style.setProperty(prop, style.getPropertyValue(prop), style.getPropertyPriority(prop));
-    });
-
-    ghost.style.position = "absolute";
-    ghost.style.visibility = "hidden";
-    ghost.style.whiteSpace = "pre"; // Use 'pre' for single-line inputs
-    ghost.style.width = style.width;
-    ghost.style.height = style.height;
-    ghost.style.overflow = "hidden";
-
-    // Set text up to caret
-    // If empty, put a zero-width space so it has height
-    const textUpToCaret = inputElement.value.substring(0, caretPos) || "\u200b";
-    ghost.textContent = textUpToCaret;
-
-    // Add a span to measure the position
-    const span = document.createElement("span");
-    span.textContent = "|";
-    ghost.appendChild(span);
-
-    document.body.appendChild(ghost);
-
-    // Get coordinates relative to the input, factoring in input scrolling!
-    const spanOffsetLeft = span.offsetLeft;
-    const spanOffsetTop = span.offsetTop;
-
-    document.body.removeChild(ghost);
-
-    // Get input's global position
-    const rect = inputElement.getBoundingClientRect();
-
-    return {
-      x: rect.left + spanOffsetLeft - (inputElement.scrollLeft || 0) + window.scrollX,
-      y: rect.top + spanOffsetTop + window.scrollY
-    };
-  };
-
-  const updatePenPosition = (inputElement: HTMLInputElement) => {
-    const coords = getCaretCoordinates(inputElement);
-    if (coords) {
-      // Offset for the pen tip. 
-      // The uploaded image is pointing bottom-left. 
-      // Assuming tip is exactly at the bottom-left corner of the w-56 h-56 square.
-      setPenPos({ x: coords.x - 25, y: coords.y - 215 });
-    }
-  };
-
-  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    setIsWriting(true);
-    updatePenPosition(e.target);
-  };
-
-  const handleInputBlur = () => {
-    setIsWriting(false);
-  };
-
-  const handleInputInteraction = (e: React.SyntheticEvent<HTMLInputElement>) => {
-    if (isWriting) {
-      updatePenPosition(e.currentTarget);
-
-      // Trigger typing animation
-      setIsTyping(true);
-      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-      typingTimeoutRef.current = setTimeout(() => {
-        setIsTyping(false);
-      }, 150);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-
-    if (!isLogin && password !== repeatPassword) {
-      setError("Passwords do not match!");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const endpoint = isLogin ? "/api/auth/login" : "/api/auth/signup";
-      const payload = isLogin ? { email, password } : { name, email, password };
-
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Something went wrong");
-      }
-
-      if (isLogin) {
-        // Store token and redirect
-        localStorage.setItem("token", data.token);
-        window.location.href = "/";
-      } else {
-        // Switch to login on successful signup
-        setSuccess("Account created successfully! Please sign in.");
+  const onSubmit = (e: React.FormEvent) => {
+    handleSubmit(
+      e,
+      () => { window.location.href = "/"; }, // On login
+      () => {
         setIsLogin(true);
         window.history.pushState(null, "", "/login");
-        setName("");
-        setPassword("");
-      }
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+      } // On signup
+    );
   };
-
-  // Keep track of the default position of the signature area 
-  // so the pen can smoothly return there.
-  const [defaultPos, setDefaultPos] = useState({ x: 0, y: 0 });
-  useEffect(() => {
-    const updateDefaultPos = () => {
-      if (defaultPenContainerRef.current) {
-        const rect = defaultPenContainerRef.current.getBoundingClientRect();
-        // Place the tip right in the middle of the 'Date' line
-        setDefaultPos({
-          x: rect.left + (rect.width / 2) + 10 + window.scrollX,
-          y: rect.top - 230 + window.scrollY
-        });
-      }
-    };
-
-    updateDefaultPos();
-    // Use timeout to ensure fonts load before measuring
-    setTimeout(updateDefaultPos, 500);
-    window.addEventListener("resize", updateDefaultPos);
-    return () => window.removeEventListener("resize", updateDefaultPos);
-  }, [isLogin]); // Also update when toggling login/signup as layout changes
 
   return (
     <div className="relative min-h-screen flex flex-col items-center overflow-x-hidden pt-4 px-8 pb-12">
@@ -239,125 +98,7 @@ export default function AuthPageContent() {
       {/* Main Content Area */}
       <main className="relative flex-1 flex flex-col justify-center items-center mt-8 w-full max-w-[1400px]">
 
-        {/* DOODLES CONTAINER */}
-        <div className="absolute inset-0 pointer-events-none overflow-visible w-full h-full hidden lg:block">
-
-          {/* Top Left Binary Text in Circle */}
-          <div className="absolute top-[5%] left-[22%] transform rotate-3 scale-110">
-            <div className="relative bg-purple-50/40 rounded-full border border-purple-300/60 p-4 px-5 font-hand text-purple-600 text-lg leading-tight shadow-sm backdrop-blur-sm flex items-center justify-center">
-              <span className="text-center">10110<br />01001<br />11010</span>
-            </div>
-          </div>
-
-          {/* Laptop */}
-          <div className="absolute top-[6%] left-[4%] w-[280px] h-[280px] transform -rotate-6 mix-blend-multiply">
-            <Image src="/new_laptop.png" alt="Laptop doodle" fill className="object-contain grayscale contrast-[1.5] brightness-[1.1]" />
-          </div>
-
-
-          {/* Sparkles Top Left Area */}
-          <div className="absolute top-[45%] left-[26%] w-8 h-8 transform rotate-12 mix-blend-multiply opacity-80">
-            <Image src="/Star.png" alt="Star" fill className="object-contain contrast-[1.1] brightness-[1.1]" />
-          </div>
-          <div className="absolute top-[48%] left-[4%] w-6 h-6 transform -rotate-12 mix-blend-multiply opacity-80">
-            <Image src="/Star.png" alt="Star" fill className="object-contain contrast-[1.1] brightness-[1.1]" />
-          </div>
-
-          {/* Pythagoras Triangle */}
-          <div className="absolute bottom-[30%] left-[8%] transform rotate-2 flex flex-col items-center scale-150">
-            <div className="relative">
-              <svg width="100" height="80" viewBox="0 0 100 80" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-800">
-                <path d="M10 70 L90 70 L10 10 Z" />
-                <rect x="10" y="60" width="10" height="10" />
-              </svg>
-              <span className="absolute top-[40%] -left-4 font-hand text-xl">a</span>
-              <span className="absolute bottom-[-20px] left-[40%] font-hand text-xl">b</span>
-              <span className="absolute top-[27%] left-[65%] font-hand text-xl">c</span>
-            </div>
-            <div className="relative mt-6 font-hand text-2xl text-slate-800">
-              a<sup className="text-sm">2</sup> + b<sup className="text-sm">2</sup> = c<sup className="text-sm">2</sup>
-              <div className="absolute -bottom-3 left-0 w-[110%] h-6 -ml-[5%] pointer-events-none opacity-90">
-                <Image src="/formula_underline.png" alt="Formula Underline" fill className="object-contain" unoptimized />
-              </div>
-            </div>
-          </div>
-
-          {/* Plant */}
-          <div className="absolute bottom-[2%] left-[18%] w-[120px] h-[160px] mix-blend-multiply scale-125">
-            <Image src="/plant_doodle_2.png" alt="Plant doodle" fill className="object-contain contrast-[1.2]" />
-            <div className="absolute bottom-4 -left-8 text-slate-800 transform rotate-12">
-              <svg width="40" height="30" viewBox="0 0 40 30" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M5,25 Q15,5 25,25 T35,10" />
-              </svg>
-            </div>
-          </div>
-
-
-          {/* RIGHT SIDE DOODLES */}
-
-          {/* Quad Formula */}
-          <div className="absolute top-[5%] right-[17%] font-hand text-2xl text-slate-800 transform rotate-2 flex items-center gap-2 scale-125">
-            <span>X =</span>
-            <div className="flex flex-col items-center">
-              <span className="border-b border-slate-800 px-2">-b ± √<span className="border-t border-slate-800">b<sup className="text-sm">2</sup> - 4ac</span></span>
-              <span>2a</span>
-            </div>
-          </div>
-
-          <div className="absolute top-[5%] right-[8%] w-10 h-10 transform rotate-12 mix-blend-multiply opacity-80">
-            <Image src="/Star.png" alt="Star" fill className="object-contain contrast-[1.1] brightness-[1.1]" />
-          </div>
-
-          {/* Sine Graph */}
-          <div className="absolute top-[12%] right-[2%] w-[130px] h-[90px] scale-120 mix-blend-multiply">
-            <Image src="/sine_graph.png" alt="Sine Graph" fill className="object-contain contrast-[1.1] brightness-[1.1]" />
-          </div>
-
-          {/* Beaker */}
-          <div className="absolute top-[22%] right-[20%] w-[120px] h-[160px] transform rotate-12 mix-blend-multiply scale-110">
-            <Image src="/flask.png" alt="Beaker doodle" fill className="object-contain contrast-[1.2]" />
-          </div>
-
-          {/* Chemical Reaction */}
-          <div className="absolute top-[42%] right-[8%] font-hand text-2xl text-slate-800 transform -rotate-6 scale-125">
-            <span className="bg-green-100/60 px-3 py-1 rounded-[60%_40%_50%_40%/40%_50%_60%_50%] border border-green-200">2H<sub className="text-sm">2</sub> + O<sub className="text-sm">2</sub> → 2H<sub className="text-sm">2</sub>O</span>
-          </div>
-
-
-          {/* Para-Cresol Structure (Moved to right) */}
-          <div className="absolute top-[47%] right-[7%] w-[110px] h-[110px] mix-blend-multiply">
-            <Image src="/Para-Cresol.png" alt="Para-Cresol" fill className="object-contain contrast-[1.1] brightness-[1.1]" />
-          </div>
-
-          {/* Mass block diagram */}
-          <div className="absolute bottom-[26%] right-[16%] flex flex-col items-center scale-125">
-            <div className="relative">
-              <svg width="150" height="60" viewBox="0 0 150 60" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-slate-800">
-                {/* Ground */}
-                <path d="M10 50 L140 50" />
-                <path d="M15 50 L10 55 M25 50 L20 55 M35 50 L30 55 M45 50 L40 55 M55 50 L50 55 M65 50 L60 55 M75 50 L70 55 M85 50 L80 55 M95 50 L90 55 M105 50 L100 55 M115 50 L110 55 M125 50 L120 55 M135 50 L130 55" strokeWidth="1" />
-                {/* Block */}
-                <rect x="50" y="20" width="40" height="30" />
-                {/* Arrow */}
-                <path d="M90 35 L130 35 L120 30 M130 35 L120 40" />
-              </svg>
-              <span className="absolute top-[24px] left-[65px] font-hand text-lg">m</span>
-              <span className="absolute top-[20px] left-[135px] font-hand text-lg">F</span>
-              <span className="absolute top-[52px] left-[65px] font-hand text-lg">μ</span>
-            </div>
-          </div>
-
-          {/* F = ma */}
-          <div className="absolute bottom-[13%] right-[18%] font-hand text-3xl text-slate-800 transform -rotate-2 scale-125">
-            <span className="bg-pink-100/60 px-4 py-1 rounded-[40%_60%_50%_40%/50%_40%_60%_50%] border border-pink-200">F = ma</span>
-          </div>
-
-          {/* Lightning Bolt */}
-          <div className="absolute bottom-[10%] right-[8%] w-12 h-16 transform rotate-12 mix-blend-multiply scale-125">
-            <Image src="/zap.png" alt="Lightning Bolt" fill className="object-contain contrast-[1.1] brightness-[1.1]" />
-          </div>
-
-        </div>
+        <AuthBackgroundDoodles />
 
         {/* CENTRAL LOGIN CARD (STUDY AGREEMENT) */}
         <div ref={cardRef} className="relative z-10 w-full max-w-[500px] mb-12 mt-4">
@@ -382,7 +123,7 @@ export default function AuthPageContent() {
               </svg>
             </div>
 
-            <form className="w-full space-y-3" onSubmit={handleSubmit}>
+            <form className="w-full space-y-3" onSubmit={onSubmit}>
 
               {!isLogin && (
                 <div className="w-full">
@@ -530,35 +271,7 @@ export default function AuthPageContent() {
               </button>
             </form>
 
-            <div className="w-full mt-4 flex items-center justify-center relative">
-              <div className="absolute w-full border-t border-slate-300"></div>
-              <span className="bg-[#fdfaf6] px-4 text-xs font-bold text-slate-800 z-10">or continue with</span>
-            </div>
-
-            <div className="flex gap-4 mt-4">
-              <button className="flex items-center justify-center w-14 h-10 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                </svg>
-              </button>
-              <button 
-                type="button"
-                onClick={() => signIn('github', { callbackUrl: '/' })}
-                className="flex items-center justify-center w-14 h-10 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-              >
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
-                </svg>
-              </button>
-              <button className="flex items-center justify-center w-14 h-10 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-black">
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.05 2.26.45 3.09.45.9 0 2.27-.64 3.73-.55 2.65.15 4.3 1.34 5.25 3.19-2.29 1.37-1.89 4.39.42 5.37-1.03 2.54-2.73 4.22-4.49 4.51zm-3.24-11.8c-.14-2.45 1.76-4.66 4.33-4.73.34 2.55-1.92 4.79-4.33 4.73z" />
-                </svg>
-              </button>
-            </div>
+            <AuthSocialLogins />
 
             {/* Signature Area (Two lines) */}
             <div className="w-full mt-8 flex justify-between px-2">
