@@ -1,26 +1,46 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Caveat, Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const geistSans = Geist({
+const geistSans = localFont({
+  src: "./fonts/Geist-Regular.ttf",
   variable: "--font-geist-sans",
-  subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
+const geistMono = localFont({
+  src: "./fonts/GeistMono-Regular.ttf",
   variable: "--font-geist-mono",
-  subsets: ["latin"],
 });
 
-const caveat = Caveat({
-  variable: "--font-caveat",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
-
-const inter = Inter({
+const inter = localFont({
+  src: "./fonts/Inter-Regular.woff2",
   variable: "--font-inter",
-  subsets: ["latin"],
+});
+
+const caveat = localFont({
+  src: [
+    {
+      path: "./fonts/Caveat-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Caveat-Medium.ttf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Caveat-SemiBold.ttf",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Caveat-Bold.ttf",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-caveat",
 });
 
 import { Providers } from "../components/Providers";
@@ -31,20 +51,18 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({
-  children,
-}: Readonly<{
+                                     children,
+                                   }: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${caveat.variable} ${inter.variable} h-full antialiased`}
-    >
+      <html
+          lang="en"
+          className={`${geistSans.variable} ${geistMono.variable} ${caveat.variable} ${inter.variable} h-full antialiased`}
+      >
       <body className="min-h-full flex flex-col">
-        <Providers>
-          {children}
-        </Providers>
+      <Providers>{children}</Providers>
       </body>
-    </html>
+      </html>
   );
 }

@@ -20,7 +20,13 @@ export default NextAuth({
             try {
                 await connectDB();
 
-                const existing = await User.findOne({ email: user.email });
+                if (!user.email) {
+                    return false;
+                }
+
+                const existing = await User.findOne({
+                    email: user.email,
+                });
 
                 if (!existing) {
                     await User.create({
@@ -40,11 +46,13 @@ export default NextAuth({
         async jwt({ token, user }) {
             await connectDB();
 
-            if (user) {
-                const dbUser = await User.findOne({ email: user.email });
+            if (user?.email) {
+                const dbUser = await User.findOne({
+                    email: user.email,
+                });
 
                 if (dbUser) {
-                    token.id = dbUser._id;
+                    token.id = dbUser._id.toString();
                     token.role = dbUser.role;
                 }
             }
