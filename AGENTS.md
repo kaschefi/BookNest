@@ -6,3 +6,6 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # Design Constraints
 - The style of this project is set to be "paper like" (e.g. notebook background, hand-drawn elements).
+
+# Component Architecture
+- **Separation of Concerns**: Use Custom Hooks (use...) to handle all business logic, state management, and side effects. Keep UI Components (.tsx files) focused purely on presentation, layout, and rendering.
