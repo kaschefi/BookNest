@@ -16,7 +16,7 @@ export default NextAuth({
     },
 
     callbacks: {
-        async signIn({ user }) {
+        async signIn({ user, account }) {
             try {
                 await connectDB();
 
@@ -32,6 +32,13 @@ export default NextAuth({
                     await User.create({
                         name: user.name || "GitHub User",
                         email: user.email,
+
+                        // CHANGED: store OAuth provider type for schema compatibility
+                        authProvider: account?.provider || "github",
+
+                        // CHANGED: store GitHub unique ID for account linking
+                        githubId: account?.providerAccountId,
+
                         role: "user",
                     });
                 }
@@ -53,7 +60,12 @@ export default NextAuth({
 
                 if (dbUser) {
                     token.id = dbUser._id.toString();
+
+                    // CHANGED: include role in JWT for authorization layer
                     token.role = dbUser.role;
+
+                    // CHANGED: include auth provider for frontend logic (optional but useful)
+                    token.authProvider = dbUser.authProvider;
                 }
             }
 
@@ -63,7 +75,12 @@ export default NextAuth({
         async session({ session, token }) {
             if (session.user) {
                 (session.user as any).id = token.id;
+
+                // CHANGED: expose role in session for UI/route guards
                 (session.user as any).role = token.role;
+
+                // CHANGED: expose auth provider in session for conditional UI
+                (session.user as any).authProvider = token.authProvider;
             }
 
             return session;

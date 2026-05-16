@@ -1,31 +1,87 @@
 import mongoose from "mongoose";
 
-const UserSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    last_name: { type: String, required: false },
+const AccountSchema = new mongoose.Schema(
+    {
+        // CHANGED: unified provider system (github/google/apple/local)
+        provider: {
+            type: String,
+            enum: ["local", "github", "google", "apple"],
+            required: true
+        },
 
-    student_id: { type: String, required: false, unique: true, sparse: true },
-
-    field_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Field",
-        required: false
+        // CHANGED: provider unique identifier
+        providerId: {
+            type: String,
+            required: true
+        }
     },
+    { _id: false }
+);
 
-    email: { type: String, required: true, unique: true },
+const UserSchema = new mongoose.Schema(
+    {
+        name: { type: String, required: true, trim: true },
+        lastName: { type: String, trim: true },
 
-    password: { type: String, required: false },
+        studentId: {
+            type: String,
+            unique: true,
+            sparse: true,
+            trim: true
+        },
 
-    role: {
-        type: String,
-        enum: ["guest", "user", "admin"],
-        default: "guest"
+        field: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Field"
+        },
+
+        email: {
+            type: String,
+            required: true,
+            unique: true,
+            lowercase: true,
+            trim: true,
+            index: true
+        },
+
+        accounts: {
+            type: [AccountSchema],
+            default: []
+        },
+
+        password: {
+            type: String,
+            select: false,
+
+            // CHANGED: avoid TS + runtime "this.accounts" issues by explicit typing
+            required: function (this: any) {
+                const hasLocalAccount = this.accounts?.some(
+                    (a: any) => a.provider === "local"
+                );
+
+                return !hasLocalAccount;
+            }
+        },
+
+        role: {
+            type: String,
+            enum: ["guest", "user", "admin"],
+            default: "user"
+        }
+    },
+    {
+        timestamps: true
     }
-});
+);
 
-// Delete cached model to ensure schema updates apply during hot-reload
-if (mongoose.models.User) {
-    delete mongoose.models.User;
-}
+// indexes
+UserSchema.index({ email: 1 }, { unique: true });
+UserSchema.index({ studentId: 1 }, { unique: true, sparse: true });
 
-export default mongoose.model("User", UserSchema);
+// CHANGED: enforce provider uniqueness per user
+UserSchema.index(
+    { "accounts.provider": 1, "accounts.providerId": 1 },
+    { unique: true }
+);
+
+export default mongoose.models.User || mongoose.model("User", UserSchema);
