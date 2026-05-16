@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
+import GoogleProvider from "next-auth/providers/google";
 import connectDB from "../../../lib/mongoose";
 import User from "../../../models/User";
 
@@ -9,6 +10,11 @@ export default NextAuth({
             clientId: process.env.GITHUB_ID as string,
             clientSecret: process.env.GITHUB_SECRET as string,
         }),
+        // Uncomment when you add Google credentials to .env.local:
+        // GoogleProvider({
+        //     clientId: process.env.GOOGLE_ID as string,
+        //     clientSecret: process.env.GOOGLE_SECRET as string,
+        // }),
     ],
 
     session: {
@@ -20,28 +26,27 @@ export default NextAuth({
             try {
                 await connectDB();
 
-                if (!user.email) {
-                    return false;
-                }
+                if (!user.email) return false;
 
-                const existing = await User.findOne({
-                    email: user.email,
-                });
+                const provider = account?.provider ?? "github";
+                const existing = await User.findOne({ email: user.email });
 
                 if (!existing) {
+                    // New OAuth user — create them
                     await User.create({
-                        name: user.name || "GitHub User",
+                        name: user.name?.split(" ")[0] || "User",
+                        last_name: user.name?.split(" ").slice(1).join(" ") || "",
                         email: user.email,
-
-                        // CHANGED: store OAuth provider type for schema compatibility
-                        authProvider: account?.provider || "github",
-
-                        // CHANGED: store GitHub unique ID for account linking
-                        githubId: account?.providerAccountId,
-
+                        provider,
                         role: "user",
                     });
+                } else if (existing.provider === "local") {
+                    // Email already registered locally — block OAuth sign-in
+                    // to avoid account takeover. You can remove this check
+                    // if you want to allow linking accounts.
+                    return `/login?error=EmailUsedLocally`;
                 }
+                // else: existing OAuth user, just let them through
 
                 return true;
             } catch (error) {
@@ -50,22 +55,17 @@ export default NextAuth({
             }
         },
 
-        async jwt({ token, user }) {
+        async jwt({ token, user, account }) {
             await connectDB();
 
-            if (user?.email) {
-                const dbUser = await User.findOne({
-                    email: user.email,
-                });
-
+            // On first sign-in, user & account are available
+            const email = token.email ?? user?.email;
+            if (email) {
+                const dbUser = await User.findOne({ email });
                 if (dbUser) {
                     token.id = dbUser._id.toString();
-
-                    // CHANGED: include role in JWT for authorization layer
                     token.role = dbUser.role;
-
-                    // CHANGED: include auth provider for frontend logic (optional but useful)
-                    token.authProvider = dbUser.authProvider;
+                    token.provider = dbUser.provider;
                 }
             }
 
@@ -75,15 +75,15 @@ export default NextAuth({
         async session({ session, token }) {
             if (session.user) {
                 (session.user as any).id = token.id;
-
-                // CHANGED: expose role in session for UI/route guards
                 (session.user as any).role = token.role;
-
-                // CHANGED: expose auth provider in session for conditional UI
-                (session.user as any).authProvider = token.authProvider;
+                (session.user as any).provider = token.provider;
             }
-
             return session;
         },
+    },
+
+    pages: {
+        // Redirect here on OAuth errors (e.g. EmailUsedLocally)
+        error: "/login",
     },
 });
