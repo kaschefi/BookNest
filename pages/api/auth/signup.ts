@@ -17,21 +17,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ message: "Missing fields" });
     }
 
-    const existingUser = await User.findOne({
-        $or: [{ email }, { name }]
-    });
-
+    // Only check email — checking name blocked users who share a first name
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
-        return res.status(400).json({ message: "User already exists" });
+        if (existingUser.provider !== "local") {
+            return res.status(400).json({
+                message: `This email is already linked to a ${existingUser.provider} account. Please sign in with ${existingUser.provider}.`
+            });
+        }
+        return res.status(400).json({ message: "An account with this email already exists." });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     try {
-        // Split Full Name into first and last name
-        const nameParts = name.split(" ");
+        const nameParts = name.trim().split(" ");
         const firstName = nameParts[0];
-        const lastName = nameParts.slice(1).join(" ") || "N/A";
+        const lastName = nameParts.slice(1).join(" ") || "";
 
         const user = await User.create({
             name: firstName,
@@ -40,6 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             field_id: new mongoose.Types.ObjectId(),
             email,
             password: hashedPassword,
+            provider: "local",
             role: "user"
         });
 

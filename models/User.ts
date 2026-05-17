@@ -16,16 +16,14 @@ const UserSchema = new mongoose.Schema({
 
     password: { type: String, required: false },
 
+    // "local" | "github" | "google" | "apple"
+    provider: { type: String, default: "local" },
+
     role: {
         type: String,
         enum: ["guest", "user", "admin"],
-        default: "guest"
+        default: "user"
     }
 });
 
-// Delete cached model to ensure schema updates apply during hot-reload
-if (mongoose.models.User) {
-    delete mongoose.models.User;
-}
-
-export default mongoose.model("User", UserSchema);
+export default mongoose.models.User || mongoose.model("User", UserSchema);
