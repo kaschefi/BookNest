@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import connectDB from "../../lib/mongoose";
-import File from "../../models/File";
+import File from "../../models/Resource";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     await connectDB();
