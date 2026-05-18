@@ -1,6 +1,51 @@
 "use client";
 import React, { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import rough from 'roughjs';
+
+// Helper component to render the sketchy background
+function RoughCardBackground() {
+    const svgRef = useRef<SVGSVGElement>(null);
+
+    useEffect(() => {
+        if (svgRef.current) {
+            svgRef.current.innerHTML = ''; // clear on re-render
+            const rc = rough.svg(svgRef.current);
+
+            const shadow = rc.rectangle(8, 12, 175, 248, {
+                fill: 'rgba(100,115,135,0.4)', // Graphite pencil color
+                stroke: 'none',
+                fillStyle: 'zigzag', // Scribbled pencil effect
+                hachureAngle: 60, // Angle of the pencil strokes
+                hachureGap: 2.5, // Density of the scribble
+                roughness: 2.5, // Messy shadow
+                bowing: 2
+            });
+
+            // Draw sketchy card base
+            const card = rc.rectangle(2, 2, 175, 248, {
+                fill: '#fcfaf7', // Warm paper color
+                stroke: '#64748b', // Grey pen outline
+                strokeWidth: 1.5,
+                fillStyle: 'solid',
+                roughness: 1.5, // Wobbly hand-drawn border
+                bowing: 1
+            });
+
+            svgRef.current.appendChild(shadow);
+            svgRef.current.appendChild(card);
+        }
+    }, []);
+
+    return (
+        <svg
+            ref={svgRef}
+            className="absolute inset-0 w-full h-full z-0 pointer-events-none transition-transform duration-300 group-hover/card:scale-[1.03]"
+            viewBox="0 0 190 265"
+        />
+    );
+}
 
 export default function Stats() {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -48,13 +93,15 @@ export default function Stats() {
         {
             name: "Computer\nScience",
             icon: (
-                <svg className="w-[80px] h-[80px] text-slate-800 mb-4" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M25 65 L25 35 C25 32 27 30 30 30 L70 30 C73 30 75 32 75 35 L75 65" />
-                    <path d="M15 65 L85 65 C88 65 90 67 90 70 C90 73 88 75 85 75 L15 75 C12 75 10 73 10 70 C10 67 12 65 15 65 Z" fill="#f8fafc" />
-                    <path d="M42 42 L35 48 L42 54" />
-                    <path d="M58 42 L65 48 L58 54" />
-                    <path d="M53 38 L47 58" />
-                </svg>
+                <div className="relative w-[80px] h-[80px] mb-4 flex justify-center items-center">
+                    <Image
+                        src="/pc2_transparent_1.png"
+                        alt="Computer Science"
+                        fill
+                        className="object-contain drop-shadow-sm"
+                        sizes="80px"
+                    />
+                </div>
             ),
             href: "/subjects/computer-science"
         },
@@ -123,7 +170,7 @@ export default function Stats() {
 
     return (
         /* CHANGE `max-w-[1200px]` BELOW to move the cards more to the left and right of the page (e.g., max-w-[1400px], max-w-full, or max-w-7xl) */
-        <div className="relative z-20 w-full max-w-[1200px] mt-12 mb-8 px-16">
+        <div className="relative z-20 w-full max-w-[1400px] mx-auto mt-12 mb-8 px-16">
             <div className="relative flex items-center group">
 
                 {/* Left Scroll Button */}
@@ -142,7 +189,7 @@ export default function Stats() {
                     ref={scrollContainerRef}
                     onScroll={checkScrollButtons}
                     /* CHANGE `gap-8` BELOW to adjust the space between the cards (e.g., gap-10, gap-12, or gap-5) */
-                    className="flex w-full gap-8 overflow-x-auto snap-x snap-mandatory py-4 scroll-smooth"
+                    className="flex w-full gap-8 overflow-x-auto snap-x snap-mandatory py-4 scroll-smooth xl:justify-center"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                 >
                     <style dangerouslySetInnerHTML={{
@@ -154,17 +201,19 @@ export default function Stats() {
                         <Link
                             href={subject.href}
                             key={index}
-                            className="flex flex-col items-center justify-between p-6 bg-white border-2 border-slate-200 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 hover:border-slate-300 transition-all duration-300 cursor-pointer min-w-[185px] w-[185px] h-[280px] shrink-0 snap-start group/card relative overflow-hidden"
+                            className="flex flex-col items-center justify-between p-6 hover:-translate-y-2 transition-all duration-300 cursor-pointer min-w-[185px] w-[185px] h-[260px] shrink-0 snap-start group/card relative"
                         >
-                            {/* Subtle background decoration */}
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-3xl opacity-0 group-hover/card:opacity-50 transition-opacity duration-500 pointer-events-none"></div>
+                            <RoughCardBackground />
 
-                            <div className="flex flex-col items-center mt-3 z-10">
+                            {/* Subtle background decoration (on hover) */}
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/40 rounded-full blur-3xl opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 pointer-events-none z-0"></div>
+
+                            <div className="flex flex-col items-center mt-2 z-10">
                                 {subject.icon}
                                 <h3 className="font-hand text-[22px] font-bold text-slate-800 text-center whitespace-pre-line leading-tight mt-1">
                                     {subject.name}
                                 </h3>
-                                <svg className="w-12 h-2 text-slate-300 mt-2 opacity-60" viewBox="0 0 100 10" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                <svg className="w-12 h-2 text-slate-400 mt-2 opacity-60" viewBox="0 0 100 10" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M5 5 Q 25 0, 50 5 T 95 5" />
                                 </svg>
                             </div>
