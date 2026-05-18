@@ -13,15 +13,29 @@ function RoughCardBackground() {
             svgRef.current.innerHTML = ''; // clear on re-render
             const rc = rough.svg(svgRef.current);
 
-            const shadow = rc.rectangle(8, 12, 175, 248, {
+            const normalShadow = rc.rectangle(8, 12, 175, 248, {
                 fill: 'rgba(100,115,135,0.4)', // Graphite pencil color
                 stroke: 'none',
                 fillStyle: 'zigzag', // Scribbled pencil effect
                 hachureAngle: 60, // Angle of the pencil strokes
                 hachureGap: 2.5, // Density of the scribble
                 roughness: 2.5, // Messy shadow
+                bowing: 1
+            });
+            // Ensure opacity is defined initially, and use longer duration for smoother fade
+            normalShadow.setAttribute('class', 'transition-all duration-300 ease-in-out opacity-100 group-hover/card:opacity-0');
+
+            const hoverShadow = rc.rectangle(8, 12, 175, 248, {
+                fill: 'rgba(100,115,135,0.4)', // Graphite pencil color
+                stroke: 'rgba(100,115,135,0.4)',
+                fillStyle: 'zigzag', // Scribbled pencil effect
+                hachureAngle: 60, // Angle of the pencil strokes
+                hachureGap: 0.5, // Density of the scribble
+                roughness: 2.5, // Messy shadow
                 bowing: 2
             });
+            // Ensure opacity starts at 0, and smoothly fades in
+            hoverShadow.setAttribute('class', 'transition-all duration-300 ease-in-out opacity-0 group-hover/card:opacity-100');
 
             // Draw sketchy card base
             const card = rc.rectangle(2, 2, 175, 248, {
@@ -33,7 +47,8 @@ function RoughCardBackground() {
                 bowing: 1
             });
 
-            svgRef.current.appendChild(shadow);
+            svgRef.current.appendChild(normalShadow);
+            svgRef.current.appendChild(hoverShadow);
             svgRef.current.appendChild(card);
         }
     }, []);
