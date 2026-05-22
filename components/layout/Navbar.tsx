@@ -3,9 +3,14 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
     const { isLoggedIn, handleSignOut } = useAuthStatus();
+    const pathname = usePathname();
+
+    const isHomeActive = pathname === "/";
+    const isNotesActive = pathname ? pathname.startsWith("/notes") : false;
 
     return (
         <nav className="relative z-20 w-full max-w-7xl flex justify-between items-center py-4">
@@ -14,14 +19,24 @@ export default function Navbar() {
 
             {/* Center Links */}
             <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-700">
-                <Link href="#" className="border-b-2 border-blue-600 text-slate-900 pb-1">
+                <Link href="/" className={`relative pb-1 hover:text-blue-600 transition-colors ${isHomeActive ? "text-slate-900 font-semibold" : ""}`}>
                     Home
+                    {isHomeActive && (
+                        <svg className="absolute left-0 bottom-[-4px] w-full h-[6px] text-blue-500 pointer-events-none" viewBox="0 0 100 10" preserveAspectRatio="none">
+                            <path d="M2,6 Q50,2 98,6" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                        </svg>
+                    )}
                 </Link>
                 <Link href="#" className="hover:text-blue-600 transition-colors">
                     Books
                 </Link>
-                <Link href="#" className="hover:text-blue-600 transition-colors">
+                <Link href="/notes" className={`relative pb-1 hover:text-blue-600 transition-colors ${isNotesActive ? "text-slate-900 font-semibold" : ""}`}>
                     Notes
+                    {isNotesActive && (
+                        <svg className="absolute left-0 bottom-[-4px] w-full h-[6px] text-red-500 pointer-events-none" viewBox="0 0 100 10" preserveAspectRatio="none">
+                            <path d="M2,6 Q50,2 98,6" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                        </svg>
+                    )}
                 </Link>
                 <Link href="#" className="hover:text-blue-600 transition-colors">
                     Subjects
