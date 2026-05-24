@@ -22,3 +22,7 @@ export function authMiddleware(req: NextApiRequest, res: NextApiResponse) {
         return res.status(401).json({ message: "Invalid token" });
     }
 }
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    return res.status(451).json({ message: "Not implemented, use sub-routes" });
+}

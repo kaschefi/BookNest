@@ -36,8 +36,8 @@ export default function AuthBackgroundDoodles() {
         </div>
         <div className="relative mt-6 font-hand text-2xl text-slate-800">
           a<sup className="text-sm">2</sup> + b<sup className="text-sm">2</sup> = c<sup className="text-sm">2</sup>
-          <div className="absolute -bottom-3 left-0 w-[110%] h-6 -ml-[5%] pointer-events-none opacity-90">
-            <Image src="/formula_underline.png" alt="Formula Underline" fill className="object-contain" unoptimized />
+          <div className="absolute -bottom-3 left-0 w-[110%] h-6 -ml-[5%] pointer-events-none opacity-90 mix-blend-multiply">
+            <Image src="/formula_underline.png" alt="Formula Underline" fill className="object-contain mix-blend-multiply" unoptimized />
           </div>
         </div>
       </div>

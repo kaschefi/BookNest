@@ -126,8 +126,8 @@ export default function HeroDoodles() {
             <div className="absolute top-[78%] left-[5%] transform -rotate-3 font-hand text-3xl text-slate-800 scale-110">
                 <div className="relative inline-block">
                     a<sup className="text-sm">2</sup> + b<sup className="text-sm">2</sup> = c<sup className="text-sm">2</sup>
-                    <div className="absolute -bottom-3 left-0 w-[110%] h-6 -ml-[5%] pointer-events-none opacity-90">
-                        <Image src="/formula_underline.png" alt="Formula Underline" fill className="object-contain" unoptimized />
+                    <div className="absolute -bottom-3 left-0 w-[110%] h-6 -ml-[5%] pointer-events-none opacity-90 mix-blend-multiply">
+                        <Image src="/formula_underline.png" alt="Formula Underline" fill className="object-contain mix-blend-multiply" unoptimized />
                     </div>
                 </div>
             </div>
