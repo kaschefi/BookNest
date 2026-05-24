@@ -1,29 +1,41 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import connectDB from "../../../lib/mongoose";
-import User from "../../../models/User";
 import jwt from "jsonwebtoken";
+import { getUserById, updateUser, deleteUser } from "../../../services/UserService";
+
+const SECRET = process.env.JWT_SECRET as string;
+
+function getDecodedToken(req: NextApiRequest): { id: string; role: string } | null {
+    const auth = req.headers.authorization;
+    if (!auth) return null;
+    try {
+        return jwt.verify(auth.split(" ")[1], SECRET) as { id: string; role: string };
+    } catch {
+        return null;
+    }
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    await connectDB();
+    const decoded = getDecodedToken(req);
+    if (!decoded) return res.status(401).json({ message: "Unauthorized" });
 
-    const auth = req.headers.authorization;
-
-    if (!auth) {
-        return res.status(401).json({ message: "No token" });
+    if (req.method === "GET") {
+        const user = await getUserById(decoded.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+        return res.status(200).json(user);
     }
 
-    const token = auth.split(" ")[1];
-
-    try {
-        const decoded: any = jwt.verify(
-            token,
-            process.env.JWT_SECRET as string
-        );
-
-        const user = await User.findById(decoded.id).select("-password");
-
-        return res.json(user);
-    } catch {
-        return res.status(401).json({ message: "Invalid token" });
+    if (req.method === "PUT") {
+        // Strip role — users cannot promote themselves
+        const { role, ...safeData } = req.body;
+        const updated = await updateUser(decoded.id, safeData);
+        if (!updated) return res.status(404).json({ message: "User not found" });
+        return res.status(200).json(updated);
     }
+
+    if (req.method === "DELETE") {
+        await deleteUser(decoded.id);
+        return res.status(200).json({ message: "Account deleted" });
+    }
+
+    return res.status(405).json({ message: "Method not allowed" });
 }
