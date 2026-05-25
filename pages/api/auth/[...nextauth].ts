@@ -9,6 +9,11 @@ export default NextAuth({
         GitHubProvider({
             clientId: process.env.GITHUB_ID as string,
             clientSecret: process.env.GITHUB_SECRET as string,
+            authorization: {
+                params: {
+                    scope: "read:user user:email",
+                },
+            },
         }),
         // Uncomment when you add Google credentials to .env.local:
         // GoogleProvider({
@@ -41,10 +46,17 @@ export default NextAuth({
                         role: "user",
                     });
                 } else if (existing.provider === "local") {
-                    // Email already registered locally — block OAuth sign-in
-                    // to avoid account takeover. You can remove this check
-                    // if you want to allow linking accounts.
-                    return `/login?error=EmailUsedLocally`;
+                    // If they have no password, they originally signed up via OAuth (GitHub)
+                    // before the "provider" field was correctly populated with "github".
+                    // We should automatically migrate them to "github" and let them through!
+                    if (!existing.password) {
+                        existing.provider = provider;
+                        await existing.save();
+                    } else {
+                        // Email already registered locally with a password — block OAuth sign-in
+                        // to avoid account takeover.
+                        return `/login?error=EmailUsedLocally`;
+                    }
                 }
                 // else: existing OAuth user, just let them through
 
