@@ -268,7 +268,7 @@ function AuthPageContentInner() {
                   {oauthError === "EmailUsedLocally"
                     ? "This email is registered locally. Please sign in with your password."
                     : oauthError === "AccessDenied"
-                    ? "Access denied. Make sure your GitHub account has a public email or try again."
+                    ? "Access denied. If using Google, make sure your email is added under 'Test Users' in your Google Cloud Console. If using GitHub, ensure your email is set to public."
                     : `Authentication failed: ${oauthError}`}
                 </div>
               )}

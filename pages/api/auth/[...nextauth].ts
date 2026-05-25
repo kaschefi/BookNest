@@ -15,11 +15,10 @@ export default NextAuth({
                 },
             },
         }),
-        // Uncomment when you add Google credentials to .env.local:
-        // GoogleProvider({
-        //     clientId: process.env.GOOGLE_ID as string,
-        //     clientSecret: process.env.GOOGLE_SECRET as string,
-        // }),
+        GoogleProvider({
+            clientId: process.env.GOOGLE_ID as string,
+            clientSecret: process.env.GOOGLE_SECRET as string,
+        }),
     ],
 
     session: {
