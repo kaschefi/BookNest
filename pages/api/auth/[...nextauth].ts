@@ -44,20 +44,14 @@ export default NextAuth({
                         provider,
                         role: "user",
                     });
-                } else if (existing.provider === "local") {
-                    // If they have no password, they originally signed up via OAuth (GitHub)
-                    // before the "provider" field was correctly populated with "github".
-                    // We should automatically migrate them to "github" and let them through!
-                    if (!existing.password) {
+                } else {
+                    // Existing user — if their provider is different (e.g. "local" or another OAuth provider),
+                    // update it to the current provider to link them seamlessly!
+                    if (existing.provider !== provider) {
                         existing.provider = provider;
                         await existing.save();
-                    } else {
-                        // Email already registered locally with a password — block OAuth sign-in
-                        // to avoid account takeover.
-                        return `/login?error=EmailUsedLocally`;
                     }
                 }
-                // else: existing OAuth user, just let them through
 
                 return true;
             } catch (error) {
