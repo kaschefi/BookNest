@@ -2,17 +2,19 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useRef, useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useState, useRef, useEffect, Suspense } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Logo from "./Logo";
 import AuthBackgroundDoodles from "./AuthBackgroundDoodles";
 import AuthSocialLogins from "./AuthSocialLogins";
 import { useAnimatedPen } from "../hooks/useAnimatedPen";
 import { useAuthForm } from "../hooks/useAuthForm";
 
-export default function AuthPageContent() {
+function AuthPageContentInner() {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const oauthError = searchParams ? searchParams.get("error") : null;
   
   // Set initial state based on current path
   const [isLogin, setIsLogin] = useState(pathname === "/login");
@@ -261,6 +263,15 @@ export default function AuthPageContent() {
 
               {error && <div className="text-red-500 text-sm font-sans text-center bg-red-50 p-2 rounded border border-red-200">{error}</div>}
               {success && <div className="text-green-600 text-sm font-sans text-center bg-green-50 p-2 rounded border border-green-200">{success}</div>}
+              {oauthError && (
+                <div className="text-red-600 text-sm font-semibold text-center bg-red-50 p-2.5 rounded border border-red-200 transform rotate-[-0.5deg]">
+                  {oauthError === "EmailUsedLocally"
+                    ? "This email is registered locally. Please sign in with your password."
+                    : oauthError === "AccessDenied"
+                    ? "Access denied. If using Google, make sure your email is added under 'Test Users' in your Google Cloud Console. If using GitHub, ensure your email is set to public."
+                    : `Authentication failed: ${oauthError}`}
+                </div>
+              )}
 
               <button
                 type="submit"
@@ -356,5 +367,25 @@ export default function AuthPageContent() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AuthPageContent() {
+  return (
+    <Suspense fallback={
+      <div className="relative min-h-screen flex flex-col items-center justify-center overflow-x-hidden p-8 bg-[#fdfaf6]">
+        <div className="w-full max-w-sm bg-[#fdfaf6] border border-slate-400 p-8 rounded-[16px] shadow-xl flex flex-col items-center text-center">
+          <div className="animate-bounce mb-4 text-[#5b73b5]">
+            <svg className="w-12 h-12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+          </div>
+          <h3 className="font-sans text-xl font-bold text-slate-800 uppercase tracking-wider">Loading Nest...</h3>
+          <p className="font-hand text-[19px] text-slate-600 mt-2">Preparing study agreement...</p>
+        </div>
+      </div>
+    }>
+      <AuthPageContentInner />
+    </Suspense>
   );
 }
