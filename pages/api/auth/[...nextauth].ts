@@ -1,21 +1,32 @@
 import NextAuth from "next-auth";
+import type { NextAuthOptions } from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import connectDB from "../../../lib/mongoose";
 import User from "../../../models/User";
 
-export default NextAuth({
-    providers: [
+const providers: NextAuthOptions["providers"] = [];
+
+if (process.env.GITHUB_ID && process.env.GITHUB_SECRET) {
+    providers.push(
         GitHubProvider({
-            clientId: process.env.GITHUB_ID as string,
-            clientSecret: process.env.GITHUB_SECRET as string,
-        }),
-        // Uncomment when you add Google credentials to .env.local:
-        // GoogleProvider({
-        //     clientId: process.env.GOOGLE_ID as string,
-        //     clientSecret: process.env.GOOGLE_SECRET as string,
-        // }),
-    ],
+            clientId: process.env.GITHUB_ID,
+            clientSecret: process.env.GITHUB_SECRET,
+        })
+    );
+}
+
+if (process.env.GOOGLE_ID && process.env.GOOGLE_SECRET) {
+    providers.push(
+        GoogleProvider({
+            clientId: process.env.GOOGLE_ID,
+            clientSecret: process.env.GOOGLE_SECRET,
+        })
+    );
+}
+
+export const authOptions: NextAuthOptions = {
+    providers,
 
     session: {
         strategy: "jwt",
@@ -55,7 +66,7 @@ export default NextAuth({
             }
         },
 
-        async jwt({ token, user, account }) {
+        async jwt({ token, user }) {
             await connectDB();
 
             // On first sign-in, user & account are available
@@ -74,9 +85,9 @@ export default NextAuth({
 
         async session({ session, token }) {
             if (session.user) {
-                (session.user as any).id = token.id;
-                (session.user as any).role = token.role;
-                (session.user as any).provider = token.provider;
+                session.user.id = token.id;
+                session.user.role = token.role;
+                session.user.provider = token.provider;
             }
             return session;
         },
@@ -86,4 +97,6 @@ export default NextAuth({
         // Redirect here on OAuth errors (e.g. EmailUsedLocally)
         error: "/login",
     },
-});
+};
+
+export default NextAuth(authOptions);

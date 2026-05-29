@@ -30,6 +30,10 @@ export interface ResourceQuery {
 
 const DEFAULT_LIMIT = 20;
 
+export interface AdminResourceQuery extends Omit<ResourceQuery, "status"> {
+    status?: ResourceQuery["status"] | "all";
+}
+
 // ─── Queries ──────────────────────────────────────────────────────────────────
 
 export async function getResources(query: ResourceQuery = {}) {
@@ -81,6 +85,55 @@ export async function getResources(query: ResourceQuery = {}) {
     };
 }
 
+export async function getAdminResources(query: AdminResourceQuery = {}) {
+    await connectDB();
+
+    const {
+        lessonId, type, status = "all",
+        semester, year, search,
+        sortBy = "newest",
+        page = 1, limit = DEFAULT_LIMIT,
+    } = query;
+
+    const filter: Record<string, unknown> = {};
+
+    if (status !== "all") filter.status = status;
+    if (lessonId) filter.lesson = lessonId;
+    if (type) filter.type = type;
+    if (semester) filter.semester = semester;
+    if (year) filter.year = year;
+    if (search) filter.$text = { $search: search };
+
+    const sortMap = {
+        newest: { createdAt: -1 },
+        popular: { downloads: -1 },
+        votes: { voteScore: -1 },
+    } as const;
+
+    const skip = (page - 1) * limit;
+
+    const [resources, total] = await Promise.all([
+        Resource.find(filter)
+            .populate("lesson", "name slug field field_id")
+            .populate("uploadedBy", "name email avatarUrl role")
+            .populate("reviewedBy", "name email")
+            .sort(sortMap[sortBy])
+            .skip(skip)
+            .limit(limit),
+        Resource.countDocuments(filter),
+    ]);
+
+    return {
+        resources,
+        pagination: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+        },
+    };
+}
+
 export async function getResourceById(id: string) {
     await connectDB();
     return Resource.findById(id)
@@ -96,7 +149,15 @@ export async function createResource(data: CreateResourceData) {
 
 export async function updateResource(
     id: string,
-    data: { title?: string; type?: "midterm" | "final" | "pamphlet"; semester?: string; year?: number }
+    data: {
+        title?: string;
+        type?: "midterm" | "final" | "pamphlet";
+        semester?: string;
+        year?: number;
+        status?: "pending" | "approved" | "rejected";
+        reviewNote?: string;
+        reviewedBy?: string;
+    }
 ) {
     await connectDB();
     return Resource.findByIdAndUpdate(id, data, { new: true, runValidators: true });

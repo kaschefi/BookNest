@@ -1,21 +1,58 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getRoleFromRequest } from "../../middleware/auth";
 import { hasPermission } from "../../lib/permissions";
 import { getResources } from "../../services/ResourceService";
 import { uploadFile } from "../../services/UploadService";
 import { createResource } from "../../services/ResourceService";
 import jwt from "jsonwebtoken";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "./auth/[...nextauth]";
 
 const SECRET = process.env.JWT_SECRET as string;
 
-function getDecodedToken(req: NextApiRequest): { id: string } | null {
+type UploadUser = {
+    id: string;
+    role: "user" | "admin";
+};
+
+function getDecodedToken(req: NextApiRequest): UploadUser | null {
     const auth = req.headers.authorization;
     if (!auth) return null;
     try {
-        return jwt.verify(auth.split(" ")[1], SECRET) as { id: string };
+        const decoded = jwt.verify(auth.split(" ")[1], SECRET) as {
+            id?: string;
+            role?: "guest" | "user" | "admin";
+        };
+
+        if (!decoded.id || decoded.role === "guest") {
+            return null;
+        }
+
+        return {
+            id: decoded.id,
+            role: decoded.role ?? "user",
+        };
     } catch {
         return null;
     }
+}
+
+async function getUploadUser(req: NextApiRequest, res: NextApiResponse): Promise<UploadUser | null> {
+    const jwtUser = getDecodedToken(req);
+    if (jwtUser) {
+        return jwtUser;
+    }
+
+    const session = await getServerSession(req, res, authOptions);
+    const sessionUser = session?.user;
+
+    if (!sessionUser?.id || sessionUser.role === "guest") {
+        return null;
+    }
+
+    return {
+        id: sessionUser.id,
+        role: sessionUser.role ?? "user",
+    };
 }
 
 // GET  /api/files
@@ -34,8 +71,6 @@ function getDecodedToken(req: NextApiRequest): { id: string } | null {
 //   }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const role = getRoleFromRequest(req);
-
     // ── GET: list resources with filters + pagination ─────────────────────────
     if (req.method === "GET") {
         const { page, limit, lessonId, type, semester, year, search, sortBy } = req.query;
@@ -56,12 +91,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // ── POST: upload a new resource ───────────────────────────────────────────
     if (req.method === "POST") {
-        if (!hasPermission(role, "upload")) {
+        const uploadUser = await getUploadUser(req, res);
+        if (!uploadUser) return res.status(401).json({ message: "Unauthorized" });
+
+        if (!hasPermission(uploadUser.role, "upload")) {
             return res.status(403).json({ message: "Forbidden" });
         }
-
-        const decoded = getDecodedToken(req);
-        if (!decoded) return res.status(401).json({ message: "Unauthorized" });
 
         const { title, lesson, type, semester, year, file } = req.body;
 
@@ -78,7 +113,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             type,
             semester,
             year: Number(year),
-            uploadedBy: decoded.id,
+            uploadedBy: uploadUser.id,
             fileUrl:  uploaded.fileUrl,
             publicId: uploaded.publicId,
             mimeType: uploaded.mimeType,
