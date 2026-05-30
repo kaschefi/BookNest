@@ -12,7 +12,19 @@ interface ILesson {
     _id: string;
     name: string;
     slug: string;
-    field: string;
+    field?: string | { _id?: string; name?: string; slug?: string };
+}
+
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS = Array.from({ length: 6 }, (_, i) => CURRENT_YEAR - i);
+const SEMESTERS = ["fall", "spring", "summer"] as const;
+
+function getLessonFieldId(lesson: ILesson) {
+    if (!lesson.field) {
+        return "";
+    }
+
+    return typeof lesson.field === "string" ? lesson.field : lesson.field._id ?? "";
 }
 
 export function useUploadForm() {
@@ -23,6 +35,8 @@ export function useUploadForm() {
     const [lessonQuery, setLessonQuery] = useState("");
     const [selectedLessonId, setSelectedLessonId] = useState("");
     const [resourceType, setResourceType] = useState<"midterm" | "final" | "pamphlet">("midterm");
+    const [semester, setSemester] = useState<"fall" | "spring" | "summer">("fall");
+    const [year, setYear] = useState<number>(CURRENT_YEAR);
     const [file, setFile] = useState<File | null>(null);
 
     // Lists & Autocomplete State
@@ -37,14 +51,11 @@ export function useUploadForm() {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
-    // Fetch Fields and Lessons on mount
+    // Fetch Fields on mount
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [fieldsRes, lessonsRes] = await Promise.all([
-                    fetch("/api/fields"),
-                    fetch("/api/lessons")
-                ]);
+                const fieldsRes = await fetch("/api/fields");
 
                 if (fieldsRes.ok && lessonsRes.ok) {
                     const fieldsData: IField[] = await fieldsRes.json();
@@ -60,8 +71,8 @@ export function useUploadForm() {
 
                         if (fieldParam) {
                             const matchedField = fieldsData.find(
-                                f => f.name.toLowerCase() === fieldParam.toLowerCase() || 
-                                     f.slug.toLowerCase() === fieldParam.toLowerCase()
+                                f => f.name.toLowerCase() === fieldParam.toLowerCase() ||
+                                    f.slug.toLowerCase() === fieldParam.toLowerCase()
                             );
                             if (matchedField) {
                                 setFieldQuery(matchedField.name);
@@ -84,12 +95,35 @@ export function useUploadForm() {
                     }
                 }
             } catch (err) {
-                console.error("Failed to load autocomplete items:", err);
+                console.error("Failed to load field autocomplete items:", err);
             }
         };
 
         fetchData();
     }, []);
+
+    useEffect(() => {
+        const fetchLessons = async () => {
+            try {
+                const lessonsUrl = selectedFieldId
+                    ? `/api/lessons?fieldId=${encodeURIComponent(selectedFieldId)}`
+                    : "/api/lessons";
+                const lessonsRes = await fetch(lessonsUrl);
+
+                if (!lessonsRes.ok) {
+                    throw new Error("Failed to load lessons.");
+                }
+
+                const lessonsData = await lessonsRes.json();
+                setAllLessons(lessonsData);
+            } catch (err) {
+                console.error("Failed to load lessons:", err);
+                setAllLessons([]);
+            }
+        };
+
+        fetchLessons();
+    }, [selectedFieldId]);
 
     // Filtered fields based on query
     const filteredFields = useMemo(() => {
@@ -103,9 +137,8 @@ export function useUploadForm() {
     const filteredLessons = useMemo(() => {
         let lessons = allLessons;
 
-        // If a field of study is selected, only show lessons under that field
         if (selectedFieldId) {
-            lessons = lessons.filter(l => l.field === selectedFieldId);
+            lessons = lessons.filter(l => getLessonFieldId(l) === selectedFieldId);
         }
 
         if (!lessonQuery.trim()) return lessons;
@@ -114,33 +147,29 @@ export function useUploadForm() {
         );
     }, [allLessons, lessonQuery, selectedFieldId]);
 
-    // Field selection handler
     const selectField = (field: IField) => {
         setFieldQuery(field.name);
         setSelectedFieldId(field._id);
         setFieldDropdownOpen(false);
         setError(null);
 
-        // If the current lesson doesn't belong to this field, reset the lesson
         if (selectedLessonId) {
             const lesson = allLessons.find(l => l._id === selectedLessonId);
-            if (lesson && lesson.field !== field._id) {
+            if (lesson && getLessonFieldId(lesson) !== field._id) {
                 setLessonQuery("");
                 setSelectedLessonId("");
             }
         }
     };
 
-    // Lesson selection handler
     const selectLesson = (lesson: ILesson) => {
         setLessonQuery(lesson.name);
         setSelectedLessonId(lesson._id);
         setLessonDropdownOpen(false);
         setError(null);
 
-        // If no field is selected yet, automatically select the field for this lesson
         if (!selectedFieldId) {
-            const parentField = allFields.find(f => f._id === lesson.field);
+            const parentField = allFields.find(f => f._id === getLessonFieldId(lesson));
             if (parentField) {
                 setFieldQuery(parentField.name);
                 setSelectedFieldId(parentField._id);
@@ -148,9 +177,7 @@ export function useUploadForm() {
         }
     };
 
-    // Enforce selection of existing fields/lessons on blur
     const handleFieldBlur = () => {
-        // Small timeout to allow click event on dropdown options to fire first
         setTimeout(() => {
             const exactMatch = allFields.find(
                 f => f.name.toLowerCase() === fieldQuery.trim().toLowerCase()
@@ -160,7 +187,6 @@ export function useUploadForm() {
                 setSelectedFieldId(exactMatch._id);
                 setFieldQuery(exactMatch.name);
             } else {
-                // Not found — reset
                 if (fieldQuery.trim() !== "") {
                     setError("Please select a Field of Study from the options.");
                 }
@@ -175,7 +201,7 @@ export function useUploadForm() {
         setTimeout(() => {
             let validLessons = allLessons;
             if (selectedFieldId) {
-                validLessons = allLessons.filter(l => l.field === selectedFieldId);
+                validLessons = allLessons.filter(l => getLessonFieldId(l) === selectedFieldId);
             }
 
             const exactMatch = validLessons.find(
@@ -196,7 +222,6 @@ export function useUploadForm() {
         }, 200);
     };
 
-    // Drag and Drop Handlers
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
         setDragging(true);
@@ -231,20 +256,24 @@ export function useUploadForm() {
         }
     };
 
-    // Form Reset/Cancel
-    const handleCancel = () => {
+    const resetFormFields = () => {
         setTitle("");
         setFieldQuery("");
         setSelectedFieldId("");
         setLessonQuery("");
         setSelectedLessonId("");
         setResourceType("midterm");
+        setSemester("fall");
+        setYear(CURRENT_YEAR);
         setFile(null);
+    };
+
+    const handleCancel = () => {
+        resetFormFields();
         setError(null);
         setSuccess(null);
     };
 
-    // Helper to read file as base64 string
     const getBase64 = (file: File): Promise<string> => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -254,13 +283,11 @@ export function useUploadForm() {
         });
     };
 
-    // Submit Action
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
         setSuccess(null);
 
-        // Validation
         if (!title.trim()) {
             setError("Document title is required.");
             return;
@@ -283,17 +310,19 @@ export function useUploadForm() {
         try {
             const fileData = await getBase64(file);
 
+            // Match exactly what the backend (pages/api/files.ts) expects
             const payload = {
                 title,
                 lesson: selectedLessonId,
                 type: resourceType,
-                fileData,
-                fileName: file.name,
-                mimeType: file.type,
-                size: file.size
+                semester,
+                year,
+                file: {
+                    data: fileData,
+                    filename: file.name,
+                }
             };
 
-            // Retrieve token from local storage (if custom JWT auth is used)
             const token = localStorage.getItem("token");
             const headers: Record<string, string> = {
                 "Content-Type": "application/json"
@@ -311,58 +340,38 @@ export function useUploadForm() {
             const data = await response.json();
 
             if (response.ok) {
-                setSuccess(`Successfully uploaded notes: "${data.title}"!`);
-                // Reset form
-                setTitle("");
-                setFieldQuery("");
-                setSelectedFieldId("");
-                setLessonQuery("");
-                setSelectedLessonId("");
-                setResourceType("midterm");
-                setFile(null);
+                resetFormFields();
+                setSuccess(`Successfully uploaded: "${data.title}"!`);
             } else {
                 setError(data.message || "Failed to upload file.");
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Upload error:", err);
-            setError(err.message || "An unexpected error occurred during upload.");
+            setError(err instanceof Error ? err.message : "An unexpected error occurred during upload.");
         } finally {
             setUploading(false);
         }
     };
 
     return {
-        title,
-        setTitle,
-        fieldQuery,
-        setFieldQuery,
+        title, setTitle,
+        fieldQuery, setFieldQuery,
         selectedFieldId,
-        lessonQuery,
-        setLessonQuery,
+        lessonQuery, setLessonQuery,
         selectedLessonId,
-        resourceType,
-        setResourceType,
-        file,
-        setFile,
-        fieldDropdownOpen,
-        setFieldDropdownOpen,
-        lessonDropdownOpen,
-        setLessonDropdownOpen,
-        dragging,
-        uploading,
-        error,
-        success,
-        filteredFields,
-        filteredLessons,
-        selectField,
-        selectLesson,
-        handleFieldBlur,
-        handleLessonBlur,
-        handleDragOver,
-        handleDragLeave,
-        handleDrop,
-        handleFileChange,
-        handleCancel,
-        handleSubmit
+        resourceType, setResourceType,
+        semester, setSemester,
+        year, setYear,
+        file, setFile,
+        fieldDropdownOpen, setFieldDropdownOpen,
+        lessonDropdownOpen, setLessonDropdownOpen,
+        dragging, uploading, error, success,
+        filteredFields, filteredLessons,
+        selectField, selectLesson,
+        handleFieldBlur, handleLessonBlur,
+        handleDragOver, handleDragLeave,
+        handleDrop, handleFileChange,
+        handleCancel, handleSubmit,
+        YEARS, SEMESTERS,
     };
 }

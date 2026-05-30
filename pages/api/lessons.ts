@@ -14,9 +14,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (req.method === "GET") {
         // Optional filter: /api/lessons?fieldId=xxx
-        const { fieldId } = req.query;
+        const fieldId = Array.isArray(req.query.fieldId) ? req.query.fieldId[0] : req.query.fieldId;
         const lessons = fieldId
-            ? await getLessonsByField(fieldId as string)
+            ? await getLessonsByField(fieldId)
             : await getAllLessons();
         return res.status(200).json(lessons);
     }
