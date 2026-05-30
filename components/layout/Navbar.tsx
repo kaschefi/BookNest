@@ -38,7 +38,7 @@ export default function Navbar() {
                         </svg>
                     )}
                 </Link>
-                <Link href="#" className="hover:text-blue-600 transition-colors">
+                <Link href="/subjects" className="hover:text-blue-600 transition-colors">
                     Subjects
                 </Link>
                 <Link href="#" className="hover:text-blue-600 transition-colors">

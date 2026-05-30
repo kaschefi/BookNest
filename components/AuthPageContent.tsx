@@ -82,7 +82,7 @@ function AuthPageContentInner() {
           <Link href="#" className="border-b-2 border-blue-600 text-slate-900 pb-1">Home</Link>
           <Link href="#" className="hover:text-blue-600 transition-colors">Books</Link>
           <Link href="#" className="hover:text-blue-600 transition-colors">Notes</Link>
-          <Link href="#" className="hover:text-blue-600 transition-colors">Subjects</Link>
+          <Link href="/subjects" className="hover:text-blue-600 transition-colors">Subjects</Link>
           <Link href="#" className="hover:text-blue-600 transition-colors">About</Link>
           <Link href="#" className="hover:text-blue-600 transition-colors">Contact</Link>
         </div>

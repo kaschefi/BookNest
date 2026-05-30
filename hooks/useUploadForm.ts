@@ -47,10 +47,41 @@ export function useUploadForm() {
                 ]);
 
                 if (fieldsRes.ok && lessonsRes.ok) {
-                    const fieldsData = await fieldsRes.json();
-                    const lessonsData = await lessonsRes.json();
+                    const fieldsData: IField[] = await fieldsRes.json();
+                    const lessonsData: ILesson[] = await lessonsRes.json();
                     setAllFields(fieldsData);
                     setAllLessons(lessonsData);
+
+                    // Prefill from URL parameters (e.g. ?field=mathematics&lesson=functions)
+                    if (typeof window !== "undefined") {
+                        const params = new URLSearchParams(window.location.search);
+                        const fieldParam = params.get("field");
+                        const lessonParam = params.get("lesson");
+
+                        if (fieldParam) {
+                            const matchedField = fieldsData.find(
+                                f => f.name.toLowerCase() === fieldParam.toLowerCase() || 
+                                     f.slug.toLowerCase() === fieldParam.toLowerCase()
+                            );
+                            if (matchedField) {
+                                setFieldQuery(matchedField.name);
+                                setSelectedFieldId(matchedField._id);
+
+                                if (lessonParam) {
+                                    const matchedLesson = lessonsData.find(
+                                        l => l.field === matchedField._id && (
+                                            l.name.toLowerCase() === lessonParam.toLowerCase() ||
+                                            l.slug.toLowerCase() === lessonParam.toLowerCase()
+                                        )
+                                    );
+                                    if (matchedLesson) {
+                                        setLessonQuery(matchedLesson.name);
+                                        setSelectedLessonId(matchedLesson._id);
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             } catch (err) {
                 console.error("Failed to load autocomplete items:", err);
