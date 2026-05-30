@@ -4,20 +4,35 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 export function useAuthStatus() {
-    const { status } = useSession();
+    const { data: session, status } = useSession();
     const [isJwtLoggedIn, setIsJwtLoggedIn] = useState(false);
+    const [jwtRole, setJwtRole] = useState<string | null>(null);
+
+    const [isInitialized, setIsInitialized] = useState(false);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
         setIsJwtLoggedIn(!!token);
+        
+        if (token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                setJwtRole(payload.role || "user");
+            } catch (e) {
+                console.error("Invalid token format");
+            }
+        }
+        setIsInitialized(true);
     }, []);
 
     const isLoggedIn = isJwtLoggedIn || status === "authenticated";
+    const isAdmin = jwtRole === "admin" || session?.user?.role === "admin";
 
     const handleSignOut = async () => {
         // Clear custom JWT
         localStorage.removeItem("token");
         setIsJwtLoggedIn(false);
+        setJwtRole(null);
 
         // Sign out from NextAuth (OAuth)
         if (status === "authenticated") {
@@ -28,7 +43,9 @@ export function useAuthStatus() {
 
     return {
         isLoggedIn,
+        isAdmin,
         isJwtLoggedIn,
+        isInitialized,
         isOAuth: status === "authenticated",
         handleSignOut,
         status, // "loading" | "authenticated" | "unauthenticated"

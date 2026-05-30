@@ -5,8 +5,8 @@ import Logo from "@/components/Logo";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
 import { usePathname } from "next/navigation";
 
-export default function Navbar() {
-    const { isLoggedIn, handleSignOut } = useAuthStatus();
+export default function Navbar({ toggleSidebar }: { toggleSidebar?: () => void } = {}) {
+    const { isLoggedIn, isAdmin, handleSignOut } = useAuthStatus();
     const pathname = usePathname();
 
     const isHomeActive = pathname === "/";
@@ -14,8 +14,18 @@ export default function Navbar() {
 
     return (
         <nav className="relative z-20 w-full max-w-7xl flex justify-between items-center py-4">
-            {/* Logo */}
-            <Logo />
+            <div className="flex items-center gap-4">
+                {toggleSidebar && (
+                    <button 
+                        onClick={toggleSidebar}
+                        className="p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors"
+                    >
+                        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                )}
+                {/* Logo */}
+                <Logo />
+            </div>
 
             {/* Center Links */}
             <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-700">
@@ -41,33 +51,21 @@ export default function Navbar() {
                 <Link href="/subjects" className="hover:text-blue-600 transition-colors">
                     Subjects
                 </Link>
-                <Link href="#" className="hover:text-blue-600 transition-colors">
-                    About
-                </Link>
-                <Link href="#" className="hover:text-blue-600 transition-colors">
-                    Contact
-                </Link>
+
+                {isAdmin && (
+                    <Link href="/admin" className={`relative pb-1 hover:text-blue-600 transition-colors ${pathname?.startsWith("/admin") ? "text-slate-900 font-semibold" : ""}`}>
+                        Admin Panel
+                        {pathname?.startsWith("/admin") && (
+                            <svg className="absolute left-0 bottom-[-4px] w-full h-[6px] text-blue-500 pointer-events-none" viewBox="0 0 100 10" preserveAspectRatio="none">
+                                <path d="M2,6 Q50,2 98,6" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                            </svg>
+                        )}
+                    </Link>
+                )}
             </div>
 
             {/* Right Side */}
             <div className="flex items-center gap-4">
-                {/* Search */}
-                <button className="text-slate-600 hover:text-slate-900">
-                    <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                        />
-                    </svg>
-                </button>
-
                 {/* Auth Button */}
                 {isLoggedIn ? (
                     <button

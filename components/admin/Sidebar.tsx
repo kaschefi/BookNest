@@ -1,0 +1,80 @@
+"use client";
+
+import React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { 
+  Home, 
+  FolderOpen, 
+  Users, 
+  LayoutGrid, 
+  BookOpen, 
+  LogOut, 
+  BookMarked
+} from "lucide-react";
+
+export function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: boolean) => void }) {
+  const pathname = usePathname();
+
+  const links = [
+    { name: "Dashboard", href: "/admin", icon: Home },
+    { name: "Files & Resources", href: "#", icon: FolderOpen },
+    { name: "Users", href: "#", icon: Users },
+    { name: "Fields", href: "#", icon: LayoutGrid },
+    { name: "Lessons", href: "#", icon: BookOpen },
+  ];
+
+  return (
+    <>
+      {/* Mobile Backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-20"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside 
+        className={`fixed inset-y-0 left-0 bg-white w-64 border-r border-gray-100 flex flex-col transition-transform duration-300 z-30
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
+        <div className="p-6 flex items-center space-x-3 mb-4">
+          <BookMarked className="h-8 w-8 text-indigo-600" />
+          <div>
+            <h1 className="text-xl font-bold text-gray-900 leading-tight">BookNest</h1>
+            <p className="text-sm text-indigo-600 font-medium">Admin Panel</p>
+          </div>
+        </div>
+
+        <nav className="flex-1 px-4 space-y-1">
+          {links.map((link) => {
+            const isActive = pathname === link.href;
+            const Icon = link.icon;
+            return (
+              <Link
+                key={link.name}
+                href={link.href}
+                className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${
+                  isActive 
+                    ? "bg-indigo-50 text-indigo-600 font-medium" 
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                }`}
+              >
+                <Icon className={`h-5 w-5 ${isActive ? "text-indigo-600" : "text-gray-400"}`} />
+                <span>{link.name}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="p-4 border-t border-gray-100">
+          <button className="flex w-full items-center space-x-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-colors">
+            <LogOut className="h-5 w-5" />
+            <span className="font-medium">Logout</span>
+          </button>
+        </div>
+      </aside>
+    </>
+  );
+}

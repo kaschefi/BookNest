@@ -31,20 +31,8 @@ export default function RoughCardBackground({
             const w = parent.offsetWidth;
             const h = parent.offsetHeight;
 
-            // 1. Draw graphite pencil shadow (wobbly zigzag strokes)
-            const shadowOffset = 8;
-            const shadow = rc.rectangle(shadowOffset, shadowOffset, w - 12, h - 12, {
-                fill: 'rgba(100, 115, 135, 0.25)', // Graphite scribbled pencil color
-                stroke: 'none',
-                fillStyle: 'zigzag',
-                hachureAngle: 65,
-                hachureGap: 3.5,
-                roughness: roughness + 0.5,
-                bowing: bowing + 0.5
-            });
-
-            // 2. Draw card container base
-            const card = rc.rectangle(2, 2, w - 12, h - 12, {
+            // 1. Draw card container base (without shadow)
+            const card = rc.rectangle(2, 2, w - 4, h - 4, {
                 fill: fillColor,
                 stroke: strokeColor,
                 strokeWidth: strokeWidth,
@@ -53,7 +41,6 @@ export default function RoughCardBackground({
                 bowing: bowing
             });
 
-            svgRef.current.appendChild(shadow);
             svgRef.current.appendChild(card);
         };
 
