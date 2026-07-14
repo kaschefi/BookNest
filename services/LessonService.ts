@@ -4,17 +4,14 @@ import Lesson from "../models/Lesson";
 type LessonAutocompleteItem = {
     _id: unknown;
     field?: unknown;
-    field_id?: unknown;
     name: string;
     slug?: string;
 };
 
 function normalizeLesson(lesson: LessonAutocompleteItem) {
-    const field = lesson.field ?? lesson.field_id;
-
     return {
         _id: lesson._id,
-        field: field ? String(field) : "",
+        field: lesson.field ? String(lesson.field) : "",
         name: lesson.name,
         slug: lesson.slug,
     };
@@ -23,7 +20,7 @@ function normalizeLesson(lesson: LessonAutocompleteItem) {
 export async function getAllLessons() {
     await connectDB();
     const lessons = await Lesson.find()
-        .select("_id field field_id name slug")
+        .select("_id field name slug")
         .sort({ name: 1 })
         .lean<LessonAutocompleteItem[]>();
 
@@ -43,7 +40,7 @@ export async function getLessonBySlug(slug: string) {
 export async function getLessonsByField(fieldId: string) {
     await connectDB();
     const lessons = await Lesson.find()
-        .select("_id field field_id name slug")
+        .select("_id field name slug")
         .sort({ name: 1 })
         .lean<LessonAutocompleteItem[]>();
 

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState, useRef, useEffect, Suspense } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Logo from "./Logo";
+import Navbar from "./layout/Navbar";
 import AuthBackgroundDoodles from "./AuthBackgroundDoodles";
 import AuthSocialLogins from "./AuthSocialLogins";
 import { useAnimatedPen } from "../hooks/useAnimatedPen";
@@ -75,26 +76,7 @@ function AuthPageContentInner() {
       <div className="absolute left-11 top-0 bottom-0 w-px bg-red-400 opacity-50 z-0 hidden md:block mix-blend-multiply"></div>
 
       {/* Navigation */}
-      <nav className="relative z-20 w-full max-w-7xl flex justify-between items-center py-4">
-        <Logo />
-
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-700">
-          <Link href="#" className="border-b-2 border-blue-600 text-slate-900 pb-1">Home</Link>
-          <Link href="#" className="hover:text-blue-600 transition-colors">Books</Link>
-          <Link href="#" className="hover:text-blue-600 transition-colors">Notes</Link>
-          <Link href="/subjects" className="hover:text-blue-600 transition-colors">Subjects</Link>
-
-        </div>
-
-        <div className="flex items-center gap-4">
-          <button className="text-slate-600 hover:text-slate-900">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-          </button>
-          <button className="bg-[#5b73b5] hover:bg-blue-700 text-white px-5 py-2 rounded-full text-sm font-medium transition-colors" onClick={handleToggle}>
-            {isLogin ? "Sign Up" : "Sign In"}
-          </button>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Main Content Area */}
       <main className="relative flex-1 flex flex-col justify-center items-center mt-8 w-full max-w-[1400px]">

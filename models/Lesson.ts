@@ -10,7 +10,6 @@ function slugify(text: string): string {
 
 interface ILesson {
     field?: mongoose.Types.ObjectId;
-    field_id?: mongoose.Types.ObjectId;
     name: string;
     slug?: string;
     createdAt?: Date;
@@ -20,11 +19,6 @@ interface ILesson {
 const LessonSchema = new Schema<ILesson>(
     {
         field: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Field",
-            index: true
-        },
-        field_id: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Field",
             index: true
@@ -44,7 +38,6 @@ LessonSchema.pre("save", function () {
 });
 
 LessonSchema.index({ field: 1, name: 1 }, { unique: true, sparse: true });
-LessonSchema.index({ field_id: 1, name: 1 }, { unique: true, sparse: true });
 
 const Lesson = models.Lesson || model<ILesson>("Lesson", LessonSchema);
 export default Lesson;

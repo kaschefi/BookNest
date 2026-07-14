@@ -1,6 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getRoleFromRequest } from "../../../middleware/auth";
-import { hasPermission } from "../../../lib/permissions";
 import {
     getResourceById,
     updateResource,
@@ -8,9 +6,9 @@ import {
     incrementViews,
 } from "../../../services/ResourceService";
 import { deleteFile } from "../../../services/UploadService";
+import { getApiUser } from "../../../lib/apiAuth";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const role = getRoleFromRequest(req);
     const { id } = req.query as { id: string };
 
     // ── GET /api/files/[id] ───────────────────────────────────────────────────
@@ -22,11 +20,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(200).json(resource);
     }
 
+    // Authenticate the user for write operations
+    const user = await getApiUser(req, res);
+    if (!user) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+
     // ── PUT /api/files/[id] ───────────────────────────────────────────────────
     if (req.method === "PUT") {
-        if (!hasPermission(role, "upload")) {
-            return res.status(403).json({ message: "Forbidden" });
+        const resource = await getResourceById(id);
+        if (!resource) return res.status(404).json({ message: "Not found" });
+
+        // Ownership and permission check
+        const ownerId = resource.uploadedBy?._id?.toString() || resource.uploadedBy?.toString();
+        const isOwner = ownerId === user.id;
+        const isAdmin = user.role === "admin";
+
+        if (!isOwner && !isAdmin) {
+            return res.status(403).json({ message: "Forbidden: You do not own this resource" });
         }
+
         const updated = await updateResource(id, req.body);
         if (!updated) return res.status(404).json({ message: "Not found" });
         return res.status(200).json(updated);
@@ -34,11 +47,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // ── DELETE /api/files/[id] ────────────────────────────────────────────────
     if (req.method === "DELETE") {
-        if (!hasPermission(role, "upload")) {
-            return res.status(403).json({ message: "Forbidden" });
-        }
         const resource = await getResourceById(id);
         if (!resource) return res.status(404).json({ message: "Not found" });
+
+        // Ownership and permission check
+        const ownerId = resource.uploadedBy?._id?.toString() || resource.uploadedBy?.toString();
+        const isOwner = ownerId === user.id;
+        const isAdmin = user.role === "admin";
+
+        if (!isOwner && !isAdmin) {
+            return res.status(403).json({ message: "Forbidden: You do not own this resource" });
+        }
 
         // Remove from Cloudinary, then remove from DB
         await deleteFile(resource.publicId);

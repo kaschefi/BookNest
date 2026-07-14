@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { seedDBIfEmpty } from "./seed";
 
 const MONGODB_URI = process.env.MONGODB_URI as string;
 
@@ -41,5 +42,9 @@ export default async function connectDB(): Promise<typeof mongoose> {
     }
 
     cached.conn = await cached.promise;
+
+    // Seed database in background if empty
+    seedDBIfEmpty().catch((err) => console.error("[Seeding] Error:", err));
+
     return cached.conn;
 }

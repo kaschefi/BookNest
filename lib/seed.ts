@@ -16,8 +16,7 @@ export async function seedDBIfEmpty() {
             "Web Development",
             "Operating Systems",
             "Database Systems",
-            "Artificial Intelligence",
-            "Week 5 - Thermodynamics" // Just an example that fits the image's select placeholder!
+            "Artificial Intelligence"
         ],
         "Mathematics": [
             "Linear Algebra",

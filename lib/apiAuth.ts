@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth/next";
 import jwt from "jsonwebtoken";
 import { authOptions } from "../pages/api/auth/[...nextauth]";
-import type { Role } from "../middleware/auth";
+export type Role = "guest" | "user" | "admin";
 
 export type ApiUser = {
     id: string;

@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getRoleFromRequest } from "../../middleware/auth";
+import { getApiUser } from "../../lib/apiAuth";
 import { hasPermission } from "../../lib/permissions";
 import {
     getAllLessons,
@@ -10,7 +10,8 @@ import {
 } from "../../services/LessonService";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const role = getRoleFromRequest(req);
+    const user = await getApiUser(req, res);
+    const role = user?.role || "guest";
 
     if (req.method === "GET") {
         // Optional filter: /api/lessons?fieldId=xxx

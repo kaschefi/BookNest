@@ -114,7 +114,7 @@ export async function getAdminResources(query: AdminResourceQuery = {}) {
 
     const [resources, total] = await Promise.all([
         Resource.find(filter)
-            .populate("lesson", "name slug field field_id")
+            .populate("lesson", "name slug field")
             .populate("uploadedBy", "name email avatarUrl role")
             .populate("reviewedBy", "name email")
             .sort(sortMap[sortBy])
