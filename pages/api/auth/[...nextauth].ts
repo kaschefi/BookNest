@@ -50,12 +50,18 @@ export const authOptions: NextAuthOptions = {
                         email: user.email,
                         provider,
                         role: "user",
+                        status: "Active",
                     });
-                } else if (existing.provider === "local") {
-                    // Email already registered locally — block OAuth sign-in
-                    // to avoid account takeover. You can remove this check
-                    // if you want to allow linking accounts.
-                    return `/login?error=EmailUsedLocally`;
+                } else {
+                    if (existing.status === "Banned") {
+                        return `/login?error=Banned`;
+                    }
+                    if (existing.provider === "local") {
+                        // Email already registered locally — block OAuth sign-in
+                        // to avoid account takeover. You can remove this check
+                        // if you want to allow linking accounts.
+                        return `/login?error=EmailUsedLocally`;
+                    }
                 }
                 // else: existing OAuth user, just let them through
 

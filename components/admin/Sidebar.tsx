@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuthStatus } from "@/hooks/useAuthStatus";
 import { 
   Home, 
   FolderOpen, 
@@ -10,18 +11,20 @@ import {
   LayoutGrid, 
   BookOpen, 
   LogOut, 
-  BookMarked
+  BookMarked,
+  Menu
 } from "lucide-react";
 
 export function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: boolean) => void }) {
   const pathname = usePathname();
+  const { handleSignOut } = useAuthStatus();
 
   const links = [
     { name: "Dashboard", href: "/admin", icon: Home },
-    { name: "Files & Resources", href: "#", icon: FolderOpen },
-    { name: "Users", href: "#", icon: Users },
-    { name: "Fields", href: "#", icon: LayoutGrid },
-    { name: "Lessons", href: "#", icon: BookOpen },
+    { name: "Files & Resources", href: "/admin/resources", icon: FolderOpen },
+    { name: "Users", href: "/admin/users", icon: Users },
+    { name: "Fields", href: "/admin/fields", icon: LayoutGrid },
+    { name: "Lessons", href: "/admin/lessons", icon: BookOpen },
   ];
 
   return (
@@ -39,12 +42,16 @@ export function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (va
         className={`fixed inset-y-0 left-0 bg-white w-64 border-r border-gray-100 flex flex-col transition-transform duration-300 z-30
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
-        <div className="p-6 flex items-center space-x-3 mb-4">
-          <BookMarked className="h-8 w-8 text-indigo-600" />
-          <div>
-            <h1 className="text-xl font-bold text-gray-900 leading-tight">BookNest</h1>
-            <p className="text-sm text-indigo-600 font-medium">Admin Panel</p>
+        <div className="p-6 flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <BookMarked className="h-8 w-8 text-indigo-600" />
+            <div>
+              <h1 className="text-xl font-bold text-gray-900 leading-tight">BookNest</h1>
+              <p className="text-sm text-indigo-600 font-medium">Admin Panel</p>
+            </div>
           </div>
+          {/* Spacer for sliding Menu button */}
+          <div className="w-10 h-10" />
         </div>
 
         <nav className="flex-1 px-4 space-y-1">
@@ -69,7 +76,10 @@ export function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (va
         </nav>
 
         <div className="p-4 border-t border-gray-100">
-          <button className="flex w-full items-center space-x-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-colors">
+          <button 
+            onClick={handleSignOut}
+            className="flex w-full items-center space-x-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-colors"
+          >
             <LogOut className="h-5 w-5" />
             <span className="font-medium">Logout</span>
           </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 export type UserStatus = "Active" | "Banned";
 
@@ -25,13 +25,14 @@ export interface FileResource {
 interface AdminContextType {
   users: User[];
   files: FileResource[];
-  unblockUser: (userId: string) => void;
-  banUser: (userId: string) => void;
+  unblockUser: (userId: string) => Promise<void>;
+  banUser: (userId: string) => Promise<void>;
   addFile: (name: string, category: string, size: string) => void;
   totalFiles: number;
   totalUsers: number;
   bannedUsers: number;
   totalCategories: number;
+  refreshData: () => Promise<void>;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -44,24 +45,15 @@ export const useAdmin = () => {
   return context;
 };
 
-const initialUsers: User[] = [
-  { id: "1", name: "Admin (Master)", email: "admin@platform.com", status: "Active", creationDate: "May 18, 2024", role: "Admin" },
-  { id: "2", name: "Ali Raza", email: "ali.raza@example.com", status: "Active", creationDate: "May 18, 2024", role: "User" },
-  { id: "3", name: "Sara Khan", email: "sara.khan@example.com", status: "Active", creationDate: "May 18, 2024", role: "User" },
-  { id: "4", name: "Hassan Ali", email: "hassan.ali@example.com", status: "Active", creationDate: "May 17, 2024", role: "User" },
-  { id: "5", name: "Zainab Fatima", email: "zainab.fatima@example.com", status: "Banned", creationDate: "May 17, 2024", role: "User" },
-];
-
-const initialFiles: FileResource[] = [
-  { id: "1", name: "Data Structures - Notes.pdf", type: "PDF", category: "Computer Science", uploadDate: "May 18, 2024", size: "2.4 MB" },
-  { id: "2", name: "Thermodynamics - Book.pdf", type: "PDF", category: "Physics", uploadDate: "May 17, 2024", size: "5.1 MB" },
-  { id: "3", name: "Organic Chemistry - Notes.docx", type: "DOCX", category: "Chemistry", uploadDate: "May 16, 2024", size: "1.8 MB" },
-  { id: "4", name: "Calculus - Worksheet.zip", type: "ZIP", category: "Mathematics", uploadDate: "May 15, 2024", size: "3.2 MB" },
-];
-
 export const AdminProvider = ({ children }: { children: ReactNode }) => {
-  const [users, setUsers] = useState<User[]>(initialUsers);
-  const [files, setFiles] = useState<FileResource[]>(initialFiles);
+  const [users, setUsers] = useState<User[]>([]);
+  const [files, setFiles] = useState<FileResource[]>([]);
+  const [stats, setStats] = useState({
+    totalFiles: 0,
+    totalUsers: 0,
+    bannedUsers: 0,
+    totalCategories: 0,
+  });
 
   const getFileExtension = (name: string) => {
     const parts = name.split('.');
@@ -74,6 +66,69 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     return "OTHER";
   };
 
+  const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const headers = {
+      ...options.headers,
+      ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+    };
+    const response = await fetch(url, { ...options, headers });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch: ${response.statusText}`);
+    }
+    return response.json();
+  };
+
+  const refreshData = async () => {
+    try {
+      const [statsData, usersResult, resourcesResult] = await Promise.all([
+        fetchWithAuth("/api/admin/stats"),
+        fetchWithAuth("/api/admin/users?limit=100"),
+        fetchWithAuth("/api/admin/resources?limit=100")
+      ]);
+
+      setStats({
+        totalFiles: statsData.resources.total,
+        totalUsers: statsData.users.total,
+        bannedUsers: statsData.users.banned || 0,
+        totalCategories: statsData.catalog.fields
+      });
+
+      const mappedUsers: User[] = (usersResult.users || []).map((u: any) => ({
+        id: u._id,
+        name: `${u.name} ${u.last_name || ""}`.trim(),
+        email: u.email,
+        status: u.status || "Active",
+        creationDate: u.createdAt 
+          ? new Date(u.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          : "N/A",
+        role: u.role === "admin" ? "Admin" : "User"
+      }));
+      setUsers(mappedUsers);
+
+      const mappedFiles: FileResource[] = (resourcesResult.resources || []).map((r: any) => {
+        const ext = r.title.split('.').pop()?.toUpperCase() || "OTHER";
+        return {
+          id: r._id,
+          name: r.title,
+          type: getFileType(ext),
+          category: r.lesson?.name || "Other",
+          uploadDate: r.createdAt
+            ? new Date(r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            : "N/A",
+          size: r.size ? (r.size / (1024 * 1024)).toFixed(1) + " MB" : "0.0 MB"
+        };
+      });
+      setFiles(mappedFiles);
+    } catch (err) {
+      console.error("Failed to load admin context data:", err);
+    }
+  };
+
+  useEffect(() => {
+    refreshData();
+  }, []);
+
   const addFile = (name: string, category: string, size: string) => {
     const ext = getFileExtension(name);
     const newFile: FileResource = {
@@ -84,21 +139,52 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       uploadDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       size: size + " MB"
     };
-    setFiles([newFile, ...files]);
+    setFiles(prev => [newFile, ...prev]);
   };
 
-  const unblockUser = (userId: string) => {
-    setUsers(users.map(u => u.id === userId ? { ...u, status: "Active" } : u));
+  const unblockUser = async (userId: string) => {
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ status: "Active" }),
+      });
+      if (res.ok) {
+        await refreshData();
+      } else {
+        const err = await res.json();
+        alert(err.message || "Failed to unblock user");
+      }
+    } catch (err) {
+      console.error("Failed to unblock user:", err);
+    }
   };
 
-  const banUser = (userId: string) => {
-    setUsers(users.map(u => u.id === userId ? { ...u, status: "Banned" } : u));
+  const banUser = async (userId: string) => {
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ status: "Banned" }),
+      });
+      if (res.ok) {
+        await refreshData();
+      } else {
+        const err = await res.json();
+        alert(err.message || "Failed to ban user");
+      }
+    } catch (err) {
+      console.error("Failed to ban user:", err);
+    }
   };
-
-  const totalFiles = files.length;
-  const totalUsers = users.length;
-  const bannedUsers = users.filter(u => u.status === "Banned").length;
-  const totalCategories = new Set(files.map(f => f.category)).size;
 
   return (
     <AdminContext.Provider value={{
@@ -107,10 +193,11 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       unblockUser,
       banUser,
       addFile,
-      totalFiles,
-      totalUsers,
-      bannedUsers,
-      totalCategories
+      totalFiles: stats.totalFiles,
+      totalUsers: stats.totalUsers,
+      bannedUsers: stats.bannedUsers,
+      totalCategories: stats.totalCategories,
+      refreshData
     }}>
       {children}
     </AdminContext.Provider>

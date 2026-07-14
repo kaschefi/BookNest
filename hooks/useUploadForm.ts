@@ -56,6 +56,7 @@ export function useUploadForm() {
         const fetchData = async () => {
             try {
                 const fieldsRes = await fetch("/api/fields");
+                const lessonsRes = await fetch("/api/lessons");
 
                 if (fieldsRes.ok && lessonsRes.ok) {
                     const fieldsData: IField[] = await fieldsRes.json();

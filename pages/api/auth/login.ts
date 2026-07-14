@@ -18,6 +18,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "User not found" });
 
+    if (user.status === "Banned") {
+        return res.status(403).json({ message: "Your account is banned. Please contact support." });
+    }
+
     if (!user.password) {
         return res.status(400).json({ message: "Please log in with your social account." });
     }

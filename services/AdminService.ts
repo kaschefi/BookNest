@@ -14,6 +14,7 @@ export async function getAdminStats() {
         rejectedResources,
         totalUsers,
         adminUsers,
+        bannedUsers,
         totalFields,
         totalLessons,
         engagement,
@@ -24,6 +25,7 @@ export async function getAdminStats() {
         Resource.countDocuments({ status: "rejected" }),
         User.countDocuments(),
         User.countDocuments({ role: "admin" }),
+        User.countDocuments({ status: "Banned" }),
         Field.countDocuments(),
         Lesson.countDocuments(),
         Resource.aggregate([
@@ -50,6 +52,7 @@ export async function getAdminStats() {
         users: {
             total: totalUsers,
             admins: adminUsers,
+            banned: bannedUsers,
         },
         catalog: {
             fields: totalFields,

@@ -75,7 +75,7 @@ export async function getUserByEmail(email: string) {
 
 export async function updateUser(
     id: string,
-    data: { name?: string; last_name?: string; student_id?: string; field_id?: string; role?: string }
+    data: { name?: string; last_name?: string; student_id?: string; field_id?: string; role?: string; status?: "Active" | "Banned" }
 ) {
     await connectDB();
     return User.findByIdAndUpdate(id, data, { new: true, runValidators: true }).select("-password");

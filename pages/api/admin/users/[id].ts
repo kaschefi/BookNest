@@ -15,6 +15,13 @@ function buildUserUpdate(body: Record<string, unknown>, isSelf: boolean) {
     if (typeof body.student_id === "string") update.student_id = body.student_id;
     if (typeof body.field_id === "string") update.field_id = body.field_id;
 
+    if (["Active", "Banned"].includes(String(body.status))) {
+        if (isSelf && body.status === "Banned") {
+            return { error: "Admins cannot ban their own account" };
+        }
+        update.status = body.status as "Active" | "Banned";
+    }
+
     if (["guest", "user", "admin"].includes(String(body.role))) {
         if (isSelf && body.role !== "admin") {
             return { error: "Admins cannot demote their own account" };

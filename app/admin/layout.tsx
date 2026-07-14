@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { AdminProvider } from "./AdminContext";
 import { Sidebar } from "@/components/admin/Sidebar";
-import MainNavbar from "@/components/layout/Navbar";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
 import { useRouter } from "next/navigation";
+import { Menu } from "lucide-react";
 
 export default function AdminLayout({
   children,
@@ -43,10 +43,17 @@ export default function AdminLayout({
         <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
         
         <div className="flex flex-col min-h-screen">
-          <div className="bg-transparent px-4 md:px-8 flex justify-center z-10 w-full relative">
-            <MainNavbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-          </div>
-          <main className="flex-1 p-4 lg:p-8 relative max-w-7xl mx-auto w-full">
+          {/* Sliding Menu Toggle Button */}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className={`fixed top-6 z-40 p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-all duration-300 bg-white shadow-sm border border-slate-200
+              ${sidebarOpen ? 'left-[196px]' : 'left-6 lg:left-8'}`}
+            title={sidebarOpen ? "Close Sidebar" : "Open Sidebar"}
+          >
+            <Menu className="h-6 w-6" />
+          </button>
+
+          <main className="flex-1 p-4 pt-20 lg:p-8 lg:pt-24 relative max-w-7xl mx-auto w-full">
             <div className="relative z-10">
               {children}
             </div>
