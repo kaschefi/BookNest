@@ -1,12 +1,11 @@
 "use client";
 
 import React from "react";
-import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
 import RoughCardBackground from "@/components/RoughCardBackground";
-import { useSubjectLessons } from "@/hooks/useSubjectLessons";
+import { useSubjectLessons, IResource } from "@/hooks/useSubjectLessons";
 
 // Realistic binder coils component for notebook look
 export function NotebookSpiral() {
@@ -119,7 +118,7 @@ export default function SubjectLessonsPage() {
                                 <Image src="/new_laptop.png" alt="Laptop" fill className="object-contain grayscale contrast-[1.2] brightness-[1.1]" />
                             </div>
                             <div className="absolute top-[16%] left-[45%] font-hand text-[19px] text-slate-700/80 leading-none -rotate-6">
-                                void main() &#123;<br />&nbsp;&nbsp;printf("nest");<br />&#125;
+                                void main() &#123;<br />&nbsp;&nbsp;printf(&quot;nest&quot;);<br />&#125;
                             </div>
                             <div className="absolute top-[34%] left-[15%] text-slate-600">
                                 <svg width="120" height="90" viewBox="0 0 120 90" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -530,7 +529,7 @@ export default function SubjectLessonsPage() {
                                 ) : (
                                     /* Active list of resources */
                                     <div className="space-y-3 pb-2">
-                                        {currentTabResources.map((res) => (
+                                        {currentTabResources.map((res: IResource) => (
                                             <div
                                                 key={res._id}
                                                 className="flex items-center justify-between p-3.5 bg-white border border-slate-200 rounded-lg hover:border-slate-400 transition-colors shadow-sm group/row"

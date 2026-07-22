@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
 import { useAuthStatus } from "./useAuthStatus";
 import { subjectStaticData } from "@/lib/subjectData";
@@ -25,29 +25,42 @@ export interface IResource {
     size?: number;
 }
 
+interface DbField {
+    _id: string;
+    name: string;
+    slug: string;
+}
+
+interface DbLesson {
+    _id: string;
+    name: string;
+    slug?: string;
+}
+
 export function useSubjectLessons() {
     const params = useParams();
     const { isLoggedIn } = useAuthStatus();
     const subjectSlug = (params && params.subject ? (params.subject as string) : "mathematics");
 
     // DB States
-    const [fieldId, setFieldId] = useState<string | null>(null);
+    const [, setFieldId] = useState<string | null>(null);
     const [fieldName, setFieldName] = useState<string>("");
     const [loading, setLoading] = useState(true);
-    const [dbLessons, setDbLessons] = useState<any[]>([]);
+    const [dbLessons, setDbLessons] = useState<DbLesson[]>([]);
 
-    // Search and Merged Lessons
+    // Search
     const [searchQuery, setSearchQuery] = useState("");
-    const [mergedLessons, setMergedLessons] = useState<MergedLesson[]>([]);
 
     // Pagination States
     const [currentPage, setCurrentPage] = useState(1);
     const lessonsPerPage = 5;
 
-    // Reset pagination to page 1 on subject slug or search query changes
-    useEffect(() => {
+    // Track previous subject or search query to reset pagination when changed
+    const [prevQuery, setPrevQuery] = useState({ subjectSlug, searchQuery });
+    if (prevQuery.subjectSlug !== subjectSlug || prevQuery.searchQuery !== searchQuery) {
+        setPrevQuery({ subjectSlug, searchQuery });
         setCurrentPage(1);
-    }, [subjectSlug, searchQuery]);
+    }
 
     // Modal/Drawer States
     const [selectedLesson, setSelectedLesson] = useState<MergedLesson | null>(null);
@@ -69,9 +82,9 @@ export function useSubjectLessons() {
                 
                 if (!fieldsRes.ok) throw new Error("Failed to load fields");
                 
-                const fields = await fieldsRes.json();
+                const fields: DbField[] = await fieldsRes.json();
                 const matchedField = fields.find(
-                    (f: any) => f.slug.toLowerCase() === subjectSlug.toLowerCase()
+                    (f) => f.slug.toLowerCase() === subjectSlug.toLowerCase()
                 );
 
                 if (matchedField) {
@@ -89,10 +102,10 @@ export function useSubjectLessons() {
                         clearTimeout(lessonTimeoutId);
                         
                         if (lessonsRes.ok) {
-                            const lessons = await lessonsRes.json();
+                            const lessons: DbLesson[] = await lessonsRes.json();
                             setDbLessons(lessons);
                         }
-                    } catch (e) {
+                    } catch {
                         clearTimeout(lessonTimeoutId);
                         console.warn("[MongoDB] Lessons fetch timed out or failed. Falling back to static mockup lessons.");
                     }
@@ -104,9 +117,10 @@ export function useSubjectLessons() {
                         .join(" ");
                     setFieldName(capitalized);
                 }
-            } catch (err: any) {
+            } catch (err: unknown) {
                 clearTimeout(timeoutId);
-                console.warn("[MongoDB] Fields fetch timed out or failed (likely campus/corporate firewall blocking port 27017). Falling back to static mockup lessons instantly. Error:", err.message || err);
+                const errorMessage = err instanceof Error ? err.message : String(err);
+                console.warn("[MongoDB] Fields fetch timed out or failed. Falling back to static mockup lessons instantly. Error:", errorMessage);
                 
                 // Set default field name since MongoDB is blocked
                 const capitalized = subjectSlug
@@ -122,9 +136,8 @@ export function useSubjectLessons() {
         fetchFieldAndLessons();
     }, [subjectSlug]);
 
-    // Merge static mockup lessons with database lessons
-    useEffect(() => {
-        // Fetch static details for this subject
+    // Compute merged mockup & DB lessons using useMemo instead of state + useEffect
+    const mergedLessons = useMemo<MergedLesson[]>(() => {
         const staticData = subjectStaticData[subjectSlug] || {
             name: fieldName || "Subject",
             subtitle: "Explore all lessons and topics.",
@@ -135,9 +148,8 @@ export function useSubjectLessons() {
         const merged: MergedLesson[] = [];
         const usedDbIds = new Set<string>();
 
-        // 1. Map our high-fidelity static lessons first
+        // 1. Map static lessons
         staticData.lessons.forEach((staticL) => {
-            // Find a case-insensitive matching lesson in the DB
             const matchedDb = dbLessons.find(
                 (dbl) => dbl.name.trim().toLowerCase() === staticL.name.trim().toLowerCase()
             );
@@ -152,7 +164,6 @@ export function useSubjectLessons() {
                 });
                 usedDbIds.add(matchedDb._id);
             } else {
-                // Static mockup lesson that has no database counterpart yet
                 merged.push({
                     _id: null,
                     name: staticL.name,
@@ -163,7 +174,7 @@ export function useSubjectLessons() {
             }
         });
 
-        // 2. Append any database lessons that were NOT matched statically
+        // 2. Append un-matched database lessons
         let nextIndex = staticData.lessons.length > 0 
             ? Math.max(...staticData.lessons.map(l => l.index)) + 1 
             : 1;
@@ -180,25 +191,27 @@ export function useSubjectLessons() {
             }
         });
 
-        setMergedLessons(merged.sort((a, b) => a.index - b.index));
+        return merged.sort((a, b) => a.index - b.index);
     }, [dbLessons, subjectSlug, fieldName]);
 
     // Fetch resources when a lesson is selected
     useEffect(() => {
-        if (!selectedLesson?._id) {
-            setResources([]);
-            return;
-        }
+        let isMounted = true;
+        const lessonId = selectedLesson?._id;
 
         const fetchLessonResources = async () => {
+            if (!lessonId) {
+                if (isMounted) setResources([]);
+                return;
+            }
+
             try {
                 setLoadingResources(true);
-                const res = await fetch(`/api/files?lessonId=${selectedLesson._id}`);
-                if (res.ok) {
+                const res = await fetch(`/api/files?lessonId=${lessonId}`);
+                if (res.ok && isMounted) {
                     const data = await res.json();
                     setResources(data.resources || []);
                     
-                    // Fetch user votes for these resources if authenticated
                     if (isLoggedIn && data.resources?.length > 0) {
                         const token = localStorage.getItem("token");
                         const votesMap: Record<string, number> = {};
@@ -212,22 +225,30 @@ export function useSubjectLessons() {
                                         const voteData = await voteRes.json();
                                         votesMap[resource._id] = voteData.userVote || 0;
                                     }
-                                } catch (e) {
+                                } catch {
                                     // Ignore failed vote fetches
                                 }
                             })
                         );
-                        setUserVotes(votesMap);
+                        if (isMounted) {
+                            setUserVotes(votesMap);
+                        }
                     }
                 }
             } catch (err) {
                 console.error("Failed to load resources:", err);
             } finally {
-                setLoadingResources(false);
+                if (isMounted) {
+                    setLoadingResources(false);
+                }
             }
         };
 
         fetchLessonResources();
+
+        return () => {
+            isMounted = false;
+        };
     }, [selectedLesson, isLoggedIn]);
 
     // Search filtration

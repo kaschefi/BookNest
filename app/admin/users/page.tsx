@@ -1,22 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
-import { useAdmin } from "../AdminContext";
-import { User as UserIcon, Shield, Trash2, Ban, CheckCircle } from "lucide-react";
+import React from "react";
+import { useAdminUsers } from "@/hooks/useAdminUsers";
+import { User as UserIcon, Shield, Ban, CheckCircle } from "lucide-react";
 import RoughCardBackground from "@/components/RoughCardBackground";
+import { User } from "../AdminContext";
 
 export default function UsersAdminPage() {
-  const { users, banUser, unblockUser } = useAdmin();
-  const [search, setSearch] = useState("");
-
-  const filteredUsers = users.filter(u => {
-    const term = search.toLowerCase();
-    return (
-      u.name.toLowerCase().includes(term) ||
-      u.email.toLowerCase().includes(term) ||
-      u.role.toLowerCase().includes(term)
-    );
-  });
+  const { users, search, setSearch, banUser, unblockUser } = useAdminUsers();
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -50,7 +41,7 @@ export default function UsersAdminPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {filteredUsers.map((user) => (
+              {users.map((user: User) => (
                 <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
                   <td className="py-4 pl-4 flex items-center space-x-3">
                     <div className={`p-2 rounded-full ${user.role === "Admin" ? "bg-indigo-50 text-indigo-600" : "bg-slate-50 text-slate-600"}`}>
@@ -102,7 +93,7 @@ export default function UsersAdminPage() {
                   </td>
                 </tr>
               ))}
-              {filteredUsers.length === 0 && (
+              {users.length === 0 && (
                 <tr>
                   <td colSpan={5} className="text-center py-12 text-gray-500 text-sm">
                     No users found matching your search.

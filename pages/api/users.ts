@@ -1,6 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import jwt from "jsonwebtoken";
 
+interface AuthenticatedRequest extends NextApiRequest {
+    user?: string | jwt.JwtPayload;
+}
+
 export function authMiddleware(req: NextApiRequest, res: NextApiResponse) {
     const auth = req.headers.authorization;
 
@@ -16,7 +20,7 @@ export function authMiddleware(req: NextApiRequest, res: NextApiResponse) {
             process.env.JWT_SECRET as string
         );
 
-        (req as any).user = decoded;
+        (req as AuthenticatedRequest).user = decoded;
         return decoded;
     } catch {
         return res.status(401).json({ message: "Invalid token" });

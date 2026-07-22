@@ -11,18 +11,22 @@ export function useAuthStatus() {
     const [isInitialized, setIsInitialized] = useState(false);
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
-        setIsJwtLoggedIn(!!token);
-        
-        if (token) {
-            try {
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                setJwtRole(payload.role || "user");
-            } catch (e) {
-                console.error("Invalid token format");
+        const checkToken = () => {
+            const token = localStorage.getItem("token");
+            if (token) {
+                setIsJwtLoggedIn(true);
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    setJwtRole(payload.role || "user");
+                } catch {
+                    console.error("Invalid token format");
+                }
+            } else {
+                setIsJwtLoggedIn(false);
             }
-        }
-        setIsInitialized(true);
+            setIsInitialized(true);
+        };
+        checkToken();
     }, []);
 
     const isLoggedIn = isJwtLoggedIn || status === "authenticated";

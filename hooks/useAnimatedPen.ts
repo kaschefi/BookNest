@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, SyntheticEvent, FocusEvent } from "react";
 
-export function useAnimatedPen(dependencies: any[] = []) {
+export function useAnimatedPen(dependencies: unknown[] = []) {
   const [penPos, setPenPos] = useState({ x: 0, y: 0 });
   const [isWriting, setIsWriting] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
@@ -81,6 +81,8 @@ export function useAnimatedPen(dependencies: any[] = []) {
     }
   };
 
+  const depKey = JSON.stringify(dependencies);
+
   useEffect(() => {
     const updateDefaultPos = () => {
       if (defaultPenContainerRef.current) {
@@ -93,10 +95,13 @@ export function useAnimatedPen(dependencies: any[] = []) {
     };
 
     updateDefaultPos();
-    setTimeout(updateDefaultPos, 500);
+    const timer = setTimeout(updateDefaultPos, 500);
     window.addEventListener("resize", updateDefaultPos);
-    return () => window.removeEventListener("resize", updateDefaultPos);
-  }, dependencies);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", updateDefaultPos);
+    };
+  }, [depKey]);
 
   return {
     penPos,

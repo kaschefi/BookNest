@@ -1,88 +1,21 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useAdmin } from "../AdminContext";
+import React from "react";
+import { useAdminResources, AdminResourceItem } from "@/hooks/useAdminResources";
 import { FileText, File, FileArchive, FileCode, Check, X, Trash2, Search, ExternalLink } from "lucide-react";
 import RoughCardBackground from "@/components/RoughCardBackground";
 
 export default function ResourcesAdminPage() {
-  const { refreshData } = useAdmin();
-  const [resources, setResources] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "approved" | "rejected">("all");
-  const [search, setSearch] = useState("");
-
-  const fetchResources = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      const url = `/api/admin/resources?limit=100${statusFilter !== "all" ? `&status=${statusFilter}` : ""}`;
-      const headers: HeadersInit = token ? { "Authorization": `Bearer ${token}` } : {};
-      const res = await fetch(url, { headers });
-      if (res.ok) {
-        const data = await res.json();
-        setResources(data.resources || []);
-      }
-    } catch (err) {
-      console.error("Failed to load resources:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchResources();
-  }, [statusFilter]);
-
-  const handleReview = async (id: string, status: "approved" | "rejected") => {
-    try {
-      const token = localStorage.getItem("token");
-      const note = prompt(`Optional review note for ${status}:`);
-      if (note === null) return; // User cancelled
-
-      const res = await fetch(`/api/admin/resources/${id}/review`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { "Authorization": `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ status, reviewNote: note }),
-      });
-
-      if (res.ok) {
-        await fetchResources();
-        await refreshData(); // Refresh counts on main dashboard
-      } else {
-        const err = await res.json();
-        alert(err.message || "Failed to submit review");
-      }
-    } catch (err) {
-      console.error("Failed to review resource:", err);
-    }
-  };
-
-  const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to permanently delete "${name}"?`)) return;
-
-    try {
-      const token = localStorage.getItem("token");
-      const headers: HeadersInit = token ? { "Authorization": `Bearer ${token}` } : {};
-      const res = await fetch(`/api/admin/resources/${id}`, {
-        method: "DELETE",
-        headers,
-      });
-
-      if (res.ok) {
-        await fetchResources();
-        await refreshData();
-      } else {
-        const err = await res.json();
-        alert(err.message || "Failed to delete resource");
-      }
-    } catch (err) {
-      console.error("Failed to delete resource:", err);
-    }
-  };
+  const {
+    resources,
+    loading,
+    statusFilter,
+    setStatusFilter,
+    search,
+    setSearch,
+    handleReview,
+    handleDelete
+  } = useAdminResources();
 
   const getFileIcon = (title: string) => {
     const ext = title.split('.').pop()?.toLowerCase();
@@ -111,11 +44,6 @@ export default function ResourcesAdminPage() {
       default: return "bg-slate-50";
     }
   };
-
-  const filteredResources = resources.filter(r =>
-    r.title.toLowerCase().includes(search.toLowerCase()) ||
-    (r.lesson?.name && r.lesson.name.toLowerCase().includes(search.toLowerCase()))
-  );
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -172,7 +100,7 @@ export default function ResourcesAdminPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {filteredResources.map((res) => (
+                {resources.map((res: AdminResourceItem) => (
                   <tr key={res._id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="py-4 pl-4">
                       <div className="flex items-center space-x-3">
@@ -244,7 +172,7 @@ export default function ResourcesAdminPage() {
                     </td>
                   </tr>
                 ))}
-                {filteredResources.length === 0 && (
+                {resources.length === 0 && (
                   <tr>
                     <td colSpan={6} className="text-center py-12 text-gray-500 text-sm">
                       No resources found.

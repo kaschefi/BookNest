@@ -55,7 +55,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 role: user.role
             }
         });
-    } catch (error: any) {
-        return res.status(500).json({ message: error.message || "Internal Server Error" });
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Internal Server Error";
+        return res.status(500).json({ message });
     }
 }

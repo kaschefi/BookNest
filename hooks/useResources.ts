@@ -61,19 +61,29 @@ export function useResources(initialFilters: ResourceFilters = {}) {
             const data = await res.json();
             setResources(data.resources);
             setPagination(data.pagination);
-        } catch (err: any) {
-            setError(err.message || "Failed to load resources");
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : "Failed to load resources";
+            setError(msg);
         } finally {
             setLoading(false);
         }
     }, [filters]);
 
     useEffect(() => {
-        fetchResources();
+        let isMounted = true;
+        const runFetch = async () => {
+            if (isMounted) {
+                await fetchResources();
+            }
+        };
+        runFetch();
+        return () => {
+            isMounted = false;
+        };
     }, [fetchResources]);
 
-    const updateFilter = (key: keyof ResourceFilters, value: any) => {
-        setFilters(prev => ({ ...prev, [key]: value, page: key !== "page" ? 1 : value }));
+    const updateFilter = (key: keyof ResourceFilters, value: ResourceFilters[keyof ResourceFilters]) => {
+        setFilters(prev => ({ ...prev, [key]: value, page: key !== "page" ? 1 : (value as number) }));
     };
 
     return { resources, loading, error, filters, pagination, updateFilter, refetch: fetchResources };

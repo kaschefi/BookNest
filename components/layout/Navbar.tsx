@@ -10,6 +10,7 @@ export default function Navbar({ toggleSidebar, hideSidebarButton, hideLogo }: {
     const pathname = usePathname();
 
     const isHomeActive = pathname === "/";
+    const isBooksActive = pathname ? pathname.startsWith("/books") : false;
     const isNotesActive = pathname ? pathname.startsWith("/notes") : false;
     const isSubjectsActive = pathname ? pathname.startsWith("/subjects") : false;
 
@@ -42,8 +43,13 @@ export default function Navbar({ toggleSidebar, hideSidebarButton, hideLogo }: {
                         </svg>
                     )}
                 </Link>
-                <Link href="#" className="hover:text-blue-600 transition-colors">
+                <Link href="/books" className={`relative pb-1 hover:text-blue-600 transition-colors ${isBooksActive ? "text-slate-900 font-semibold" : ""}`}>
                     Books
+                    {isBooksActive && (
+                        <svg className="absolute left-0 bottom-[-4px] w-full h-[6px] text-purple-500 pointer-events-none" viewBox="0 0 100 10" preserveAspectRatio="none">
+                            <path d="M2,6 Q50,2 98,6" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                        </svg>
+                    )}
                 </Link>
                 <Link href="/notes" className={`relative pb-1 hover:text-blue-600 transition-colors ${isNotesActive ? "text-slate-900 font-semibold" : ""}`}>
                     Notes

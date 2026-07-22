@@ -11,8 +11,7 @@ import {
   LayoutGrid, 
   BookOpen, 
   LogOut, 
-  BookMarked,
-  Menu
+  BookMarked
 } from "lucide-react";
 
 export function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: boolean) => void }) {

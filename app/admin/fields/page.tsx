@@ -1,115 +1,24 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { LayoutGrid, Plus, Trash2, Edit2, Check, X } from "lucide-react";
-import { useAdmin } from "../AdminContext";
+import { useAdminFields, FieldItem } from "@/hooks/useAdminFields";
 import RoughCardBackground from "@/components/RoughCardBackground";
 
 export default function FieldsAdminPage() {
-  const { refreshData } = useAdmin();
-  const [fields, setFields] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [newFieldName, setNewFieldName] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingName, setEditingName] = useState("");
-
-  const fetchFields = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      const headers: HeadersInit = token ? { "Authorization": `Bearer ${token}` } : {};
-      const res = await fetch("/api/admin/fields", { headers });
-      if (res.ok) {
-        const data = await res.json();
-        setFields(data);
-      }
-    } catch (err) {
-      console.error("Failed to load fields:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchFields();
-  }, []);
-
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newFieldName.trim()) return;
-
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("/api/admin/fields", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { "Authorization": `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ name: newFieldName }),
-      });
-
-      if (res.ok) {
-        setNewFieldName("");
-        await fetchFields();
-        await refreshData();
-      } else {
-        const err = await res.json();
-        alert(err.message || "Failed to create field");
-      }
-    } catch (err) {
-      console.error("Failed to create field:", err);
-    }
-  };
-
-  const handleUpdate = async (id: string) => {
-    if (!editingName.trim()) return;
-
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`/api/admin/fields/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { "Authorization": `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ name: editingName }),
-      });
-
-      if (res.ok) {
-        setEditingId(null);
-        await fetchFields();
-      } else {
-        const err = await res.json();
-        alert(err.message || "Failed to update field");
-      }
-    } catch (err) {
-      console.error("Failed to update field:", err);
-    }
-  };
-
-  const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to permanently delete the field "${name}"? This might affect related lessons and resources!`)) return;
-
-    try {
-      const token = localStorage.getItem("token");
-      const headers: HeadersInit = token ? { "Authorization": `Bearer ${token}` } : {};
-      const res = await fetch(`/api/admin/fields/${id}`, {
-        method: "DELETE",
-        headers,
-      });
-
-      if (res.ok) {
-        await fetchFields();
-        await refreshData();
-      } else {
-        const err = await res.json();
-        alert(err.message || "Failed to delete field");
-      }
-    } catch (err) {
-      console.error("Failed to delete field:", err);
-    }
-  };
+  const {
+    fields,
+    loading,
+    newFieldName,
+    setNewFieldName,
+    editingId,
+    setEditingId,
+    editingName,
+    setEditingName,
+    handleCreate,
+    handleUpdate,
+    handleDelete
+  } = useAdminFields();
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -158,7 +67,7 @@ export default function FieldsAdminPage() {
             <div className="text-center py-12 text-gray-500 text-sm">Loading fields...</div>
           ) : (
             <div className="space-y-3">
-              {fields.map((field) => (
+              {fields.map((field: FieldItem) => (
                 <div
                   key={field._id}
                   className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl border border-gray-50 hover:border-gray-100 transition-all"

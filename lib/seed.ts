@@ -1,7 +1,25 @@
+import bcrypt from "bcryptjs";
+import User from "../models/User";
 import Field from "../models/Field";
 import Lesson from "../models/Lesson";
 
 export async function seedDBIfEmpty() {
+    // Seed default admin user if none exists
+    const adminExists = await User.exists({ role: "admin" });
+    if (!adminExists) {
+        const hashedPassword = await bcrypt.hash("admin123", 10);
+        await User.create({
+            name: "BookNest",
+            last_name: "Admin",
+            email: "admin@booknest.com",
+            password: hashedPassword,
+            role: "admin",
+            provider: "local",
+            status: "Active"
+        });
+        console.log("[Seeding] Seeded default admin account: admin@booknest.com / admin123");
+    }
+
     const fieldCount = await Field.countDocuments();
     if (fieldCount > 0) {
         return;

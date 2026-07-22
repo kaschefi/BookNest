@@ -54,8 +54,9 @@ export function useAuthForm(isLogin: boolean) {
         setRepeatPassword("");
         if (onSuccessSignup) onSuccessSignup();
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "An error occurred";
+      setError(msg);
     } finally {
       setLoading(false);
     }

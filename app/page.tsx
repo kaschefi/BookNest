@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
 import HeroDoodles from "@/components/home/HeroDoodles";
 import Hero from "@/components/home/Hero";
@@ -21,10 +22,11 @@ export default function Home() {
 
             {/* Stack of books doodle */}
             <div className="relative mt-8 w-full max-w-[50rem] h-[280px] md:h-[360px] pointer-events-none mix-blend-multiply">
-              <img
+              <Image
                   src="/combined_books.PNG"
                   alt="Combined books, plant, and pencil cup illustration"
-                  className="w-full h-full object-contain contrast-[1.1] brightness-[1.1]"
+                  fill
+                  className="object-contain contrast-[1.1] brightness-[1.1]"
               />
             </div>
           </div>

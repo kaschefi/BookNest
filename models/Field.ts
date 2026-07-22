@@ -1,4 +1,4 @@
-import mongoose, { Schema, model, models, HydratedDocument } from "mongoose";
+import { Schema, model, models, HydratedDocument } from "mongoose";
 
 function slugify(text: string): string {
     return text

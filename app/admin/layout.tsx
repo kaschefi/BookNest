@@ -16,20 +16,14 @@ export default function AdminLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { isAdmin, status, isJwtLoggedIn, isInitialized } = useAuthStatus();
   const router = useRouter();
-  const [isReady, setIsReady] = useState(false);
+  const isReady = isInitialized && status !== "loading" && isAdmin;
 
   useEffect(() => {
-    // Only run redirect logic when session loading has finished AND local storage is parsed
-    if (status !== "loading" && isInitialized) {
-      // If we've checked the local JWT and NextAuth session and neither is admin
-      if (!isAdmin) {
-        if (!isJwtLoggedIn && status === "unauthenticated") {
-            router.push("/login");
-        } else {
-            router.push("/");
-        }
+    if (status !== "loading" && isInitialized && !isAdmin) {
+      if (!isJwtLoggedIn && status === "unauthenticated") {
+        router.push("/login");
       } else {
-          setIsReady(true);
+        router.push("/");
       }
     }
   }, [isAdmin, status, isJwtLoggedIn, isInitialized, router]);

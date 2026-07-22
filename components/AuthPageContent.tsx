@@ -1,10 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useState, useRef, useEffect, Suspense } from "react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import Logo from "./Logo";
+import { usePathname, useSearchParams } from "next/navigation";
 import Navbar from "./layout/Navbar";
 import AuthBackgroundDoodles from "./AuthBackgroundDoodles";
 import AuthSocialLogins from "./AuthSocialLogins";
@@ -12,26 +10,19 @@ import { useAnimatedPen } from "../hooks/useAnimatedPen";
 import { useAuthForm } from "../hooks/useAuthForm";
 
 function AuthPageContentInner() {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const oauthError = searchParams ? searchParams.get("error") : null;
   
-  // Set initial state based on current path
-  const [isLogin, setIsLogin] = useState(pathname === "/login");
+  const isLoginPath = pathname === "/login";
+  const [isLogin, setIsLogin] = useState(isLoginPath);
+  const [prevPath, setPrevPath] = useState(pathname);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // Sync state with pathname changes
-  useEffect(() => {
+  if (prevPath !== pathname) {
+    setPrevPath(pathname);
     setIsLogin(pathname === "/login");
-  }, [pathname]);
-
-  const handleToggle = () => {
-    const nextMode = !isLogin;
-    setIsLogin(nextMode);
-    const nextUrl = nextMode ? "/login" : "/signup";
-    window.history.pushState(null, "", nextUrl);
-  };
+  }
 
   useEffect(() => {
     if (!isLogin && cardRef.current) {
@@ -312,7 +303,7 @@ function AuthPageContentInner() {
             {/* Note */}
             <div className="w-[200px] bg-[#f9ebc7] p-3 shadow-md border border-[#e6d3a8] relative">
               <p className="font-hand text-slate-800 text-center leading-tight">
-                "The more you learn,<br />the more you earn."
+                &quot;The more you learn,<br />the more you earn.&quot;
               </p>
               <div className="absolute bottom-2 right-2 text-slate-600">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
