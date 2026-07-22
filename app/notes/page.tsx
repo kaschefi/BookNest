@@ -66,6 +66,12 @@ export default function NotesUploadPage() {
         setLessonQuery,
         resourceType,
         setResourceType,
+        semester,
+        setSemester,
+        year,
+        setYear,
+        YEARS,
+        SEMESTERS,
         file,
         fieldDropdownOpen,
         setFieldDropdownOpen,
@@ -415,6 +421,43 @@ export default function NotesUploadPage() {
                                     )}
                                 </div>
                             </div>
+
+                            {/* Semester and Year Selection */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[18px] font-hand text-slate-800 font-bold mb-1.5">
+                                        Semester:
+                                    </label>
+                                    <select
+                                        value={semester}
+                                        onChange={(e) => setSemester(e.target.value as "fall" | "spring" | "summer")}
+                                        className="w-full px-4 py-2.5 bg-[#fdfaf6] border border-slate-400 rounded-lg text-slate-800 font-sans focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm capitalize"
+                                    >
+                                        {SEMESTERS.map((s) => (
+                                            <option key={s} value={s} className="capitalize">
+                                                {s.charAt(0).toUpperCase() + s.slice(1)}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-[18px] font-hand text-slate-800 font-bold mb-1.5">
+                                        Year:
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="1900"
+                                        max="2099"
+                                        placeholder="e.g. 2024"
+                                        value={year || ""}
+                                        onChange={(e) => setYear(e.target.value ? Number(e.target.value) : 0)}
+                                        className="w-full px-4 py-2.5 bg-[#fdfaf6] border border-slate-400 rounded-lg text-slate-800 font-sans focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
                             {/* Type Tabs Selection */}
                             <div>
                                 <label className="block text-[18px] font-hand text-slate-800 font-bold mb-1.5">

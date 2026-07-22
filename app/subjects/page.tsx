@@ -1,10 +1,17 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
 import RoughCardBackground from "@/components/RoughCardBackground";
+
+interface IFieldData {
+    _id?: string;
+    name: string;
+    slug: string;
+    description?: string;
+}
 
 // Realistic binder coils component for notebook look
 export function NotebookSpiral() {
@@ -27,74 +34,110 @@ export function NotebookSpiral() {
     );
 }
 
+const PRESET_SUBJECTS: Record<string, { description: string; icon: React.ReactNode }> = {
+    mathematics: {
+        description: "From basics of sets, geometry, and calculus to complex algebraic systems. Dive into core formulas.",
+        icon: (
+            <svg className="w-[80px] h-[80px] text-slate-800" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="25" y="20" width="50" height="60" rx="6" />
+                <line x1="25" y1="50" x2="75" y2="50" />
+                <line x1="50" y1="20" x2="50" y2="80" />
+                <path d="M37.5 31 L37.5 39 M33.5 35 L41.5 35" />
+                <path d="M58.5 35 L66.5 35" />
+                <path d="M34 61 L41 69 M41 61 L34 69" />
+                <path d="M58.5 65 L66.5 65 M62.5 59 L62.5 60 M62.5 70 L62.5 71" />
+            </svg>
+        )
+    },
+    "computer-science": {
+        description: "Explore variables, arrays, structures, Operating Systems, databases, AI, and algorithmic complexity rules.",
+        icon: (
+            <div className="relative w-[80px] h-[80px] flex justify-center items-center">
+                <Image
+                    src="/pc2_transparent_1.png"
+                    alt="Computer Science"
+                    fill
+                    className="object-contain drop-shadow-sm"
+                    sizes="80px"
+                />
+            </div>
+        )
+    },
+    chemistry: {
+        description: "Study mole stoichiometry, organic reactions, periodic trends, thermodynamics, and molecular models.",
+        icon: (
+            <svg className="w-[80px] h-[80px] text-slate-800" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <ellipse cx="50" cy="25" rx="8" ry="3" />
+                <path d="M42 25 L42 45 L25 75 C20 84 26 90 35 90 L65 90 C74 90 80 84 75 75 L58 45 L58 25" />
+                <path d="M32 63 C40 66 60 60 68 63 L73.5 73 C76 78 72 85 65 85 L35 85 C28 85 24 78 26.5 73 Z" fill="#e0e7ff" stroke="none" />
+                <path d="M32 63 C40 66 60 60 68 63" stroke="#4f46e5" strokeWidth="1.5" />
+                <circle cx="45" cy="78" r="3" fill="white" stroke="none" opacity="0.8" />
+                <circle cx="55" cy="72" r="1.5" fill="white" stroke="none" opacity="0.8" />
+                <circle cx="48" cy="85" r="1" fill="white" stroke="none" opacity="0.8" />
+            </svg>
+        )
+    },
+    physics: {
+        description: "Investigate Newtonian kinematics, thermodynamics, electromagnetism, and classical mechanics.",
+        icon: (
+            <svg className="w-[80px] h-[80px] text-slate-800" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <ellipse cx="50" cy="50" rx="35" ry="12" transform="rotate(30 50 50)" />
+                <ellipse cx="50" cy="50" rx="35" ry="12" transform="rotate(90 50 50)" />
+                <ellipse cx="50" cy="50" rx="35" ry="12" transform="rotate(150 50 50)" />
+                <circle cx="50" cy="50" r="8" fill="#1e40af" stroke="#1e3a8a" />
+                <circle cx="50" cy="50" r="3" fill="#60a5fa" stroke="none" />
+            </svg>
+        )
+    }
+};
+
+const DEFAULT_ICON = (
+    <svg className="w-[80px] h-[80px] text-slate-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+    </svg>
+);
+
 export default function SubjectsDirectory() {
-    const subjects = [
-        {
-            name: "Mathematics",
-            slug: "mathematics",
-            description: "From basics of sets, geometry, and calculus to complex algebraic systems. Dive into core formulas.",
-            icon: (
-                <svg className="w-[80px] h-[80px] text-slate-800" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="25" y="20" width="50" height="60" rx="6" />
-                    <line x1="25" y1="50" x2="75" y2="50" />
-                    <line x1="50" y1="20" x2="50" y2="80" />
-                    <path d="M37.5 31 L37.5 39 M33.5 35 L41.5 35" />
-                    <path d="M58.5 35 L66.5 35" />
-                    <path d="M34 61 L41 69 M41 61 L34 69" />
-                    <path d="M58.5 65 L66.5 65 M62.5 59 L62.5 60 M62.5 70 L62.5 71" />
-                </svg>
-            )
-        },
-        {
-            name: "Computer Science",
-            slug: "computer-science",
-            description: "Explore variables, arrays, structures, Operating Systems, databases, AI, and algorithmic complexity rules.",
-            icon: (
-                <div className="relative w-[80px] h-[80px] flex justify-center items-center">
-                    <Image
-                        src="/pc2_transparent_1.png"
-                        alt="Computer Science"
-                        fill
-                        className="object-contain drop-shadow-sm"
-                        sizes="80px"
-                    />
-                </div>
-            )
-        },
-        {
-            name: "Chemistry",
-            slug: "chemistry",
-            description: "Study mole stoichiometry, organic reactions, periodic trends, thermodynamics, and molecular models.",
-            icon: (
-                <svg className="w-[80px] h-[80px] text-slate-800" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <ellipse cx="50" cy="25" rx="8" ry="3" />
-                    <path d="M42 25 L42 45 L25 75 C20 84 26 90 35 90 L65 90 C74 90 80 84 75 75 L58 45 L58 25" />
-                    <path d="M32 63 C40 66 60 60 68 63 L73.5 73 C76 78 72 85 65 85 L35 85 C28 85 24 78 26.5 73 Z" fill="#e0e7ff" stroke="none" />
-                    <path d="M32 63 C40 66 60 60 68 63" stroke="#4f46e5" strokeWidth="1.5" />
-                    <circle cx="45" cy="78" r="3" fill="white" stroke="none" opacity="0.8" />
-                    <circle cx="55" cy="72" r="1.5" fill="white" stroke="none" opacity="0.8" />
-                    <circle cx="48" cy="85" r="1" fill="white" stroke="none" opacity="0.8" />
-                </svg>
-            )
-        },
-        {
-            name: "Physics",
-            slug: "physics",
-            description: "Investigate Newtonian kinematics, thermodynamics, electromagnetism, and classical mechanics.",
-            icon: (
-                <svg className="w-[80px] h-[80px] text-slate-800" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <ellipse cx="50" cy="50" rx="35" ry="12" transform="rotate(30 50 50)" />
-                    <ellipse cx="50" cy="50" rx="35" ry="12" transform="rotate(90 50 50)" />
-                    <ellipse cx="50" cy="50" rx="35" ry="12" transform="rotate(150 50 50)" />
-                    <circle cx="50" cy="50" r="8" fill="#1e40af" stroke="#1e3a8a" />
-                    <circle cx="50" cy="50" r="3" fill="#60a5fa" stroke="none" />
-                </svg>
-            )
-        }
-    ];
+    const [fields, setFields] = useState<IFieldData[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchFields = async () => {
+            try {
+                const res = await fetch("/api/fields");
+                if (res.ok) {
+                    const data: IFieldData[] = await res.json();
+                    if (data && data.length > 0) {
+                        setFields(data);
+                    } else {
+                        // Fallback to default 4
+                        setFields([
+                            { name: "Mathematics", slug: "mathematics" },
+                            { name: "Computer Science", slug: "computer-science" },
+                            { name: "Chemistry", slug: "chemistry" },
+                            { name: "Physics", slug: "physics" },
+                        ]);
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to load dynamic fields:", err);
+                setFields([
+                    { name: "Mathematics", slug: "mathematics" },
+                    { name: "Computer Science", slug: "computer-science" },
+                    { name: "Chemistry", slug: "chemistry" },
+                    { name: "Physics", slug: "physics" },
+                ]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchFields();
+    }, []);
 
     return (
-        <div className="relative min-h-screen flex flex-col items-center overflow-x-hidden pt-4 px-8 pb-12">
+        <div className="relative min-h-screen flex flex-col items-center overflow-x-hidden pt-4 px-8 pb-12 bg-[#fdfaf6]">
             {/* Lined Notebook Paper Aesthetics */}
             {/* Red margins */}
             <div className="absolute left-10 top-0 bottom-0 w-px bg-red-400 opacity-50 z-0 hidden md:block mix-blend-multiply"></div>
@@ -131,39 +174,52 @@ export default function SubjectsDirectory() {
                 </div>
 
                 {/* Subject Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-[950px] mt-4">
-                    {subjects.map((subj) => (
-                        <Link
-                            key={subj.slug}
-                            href={`/subjects/${subj.slug}`}
-                            className="relative flex flex-col items-center justify-between p-8 hover:-translate-y-1.5 transition-all duration-300 cursor-pointer min-h-[300px] group/card rounded-[16px]"
-                        >
-                            <RoughCardBackground />
+                {loading ? (
+                    <div className="text-center py-16 font-hand text-2xl text-slate-600 font-bold">
+                        Loading study fields...
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-[950px] mt-4">
+                        {fields.map((field) => {
+                            const slug = field.slug || field.name.toLowerCase().replace(/\s+/g, "-");
+                            const preset = PRESET_SUBJECTS[slug];
+                            const icon = preset?.icon || DEFAULT_ICON;
+                            const description = field.description || preset?.description || `Explore lessons, lecture sheets, and study materials in ${field.name}.`;
 
-                            {/* Hover highlight */}
-                            <div className="absolute top-0 right-0 w-36 h-36 bg-blue-50/50 rounded-full blur-3xl opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 pointer-events-none z-0"></div>
+                            return (
+                                <Link
+                                    key={slug}
+                                    href={`/subjects/${slug}`}
+                                    className="relative flex flex-col items-center justify-between p-8 hover:-translate-y-1.5 transition-all duration-300 cursor-pointer min-h-[300px] group/card rounded-[16px]"
+                                >
+                                    <RoughCardBackground />
 
-                            <div className="flex flex-col items-center text-center z-10 w-full">
-                                <div className="mb-4 transform group-hover/card:scale-105 transition-transform duration-300">
-                                    {subj.icon}
-                                </div>
-                                <h3 className="font-sans text-2xl font-bold text-slate-800 leading-tight">
-                                    {subj.name}
-                                </h3>
-                                <p className="font-hand text-lg text-slate-600 mt-2 max-w-[340px] leading-relaxed">
-                                    {subj.description}
-                                </p>
-                            </div>
+                                    {/* Hover highlight */}
+                                    <div className="absolute top-0 right-0 w-36 h-36 bg-blue-50/50 rounded-full blur-3xl opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 pointer-events-none z-0"></div>
 
-                            <div className="flex items-center gap-1.5 text-slate-600 font-hand text-xl font-bold group-hover/card:text-blue-600 transition-colors z-10 mt-4 mb-2">
-                                Explore Lessons
-                                <svg className="w-5 h-5 transition-transform duration-300 group-hover/card:translate-x-1" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                                    <path d="M5 12h14m-7-7 7 7-7 7" />
-                                </svg>
-                            </div>
-                        </Link>
-                    ))}
-                </div>
+                                    <div className="flex flex-col items-center text-center z-10 w-full">
+                                        <div className="mb-4 transform group-hover/card:scale-105 transition-transform duration-300">
+                                            {icon}
+                                        </div>
+                                        <h3 className="font-sans text-2xl font-bold text-slate-800 leading-tight">
+                                            {field.name}
+                                        </h3>
+                                        <p className="font-hand text-lg text-slate-600 mt-2 max-w-[340px] leading-relaxed">
+                                            {description}
+                                        </p>
+                                    </div>
+
+                                    <div className="flex items-center gap-1.5 text-slate-600 font-hand text-xl font-bold group-hover/card:text-blue-600 transition-colors z-10 mt-4 mb-2">
+                                        Explore Lessons
+                                        <svg className="w-5 h-5 transition-transform duration-300 group-hover/card:translate-x-1" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                                            <path d="M5 12h14m-7-7 7 7-7 7" />
+                                        </svg>
+                                    </div>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                )}
             </main>
         </div>
     );

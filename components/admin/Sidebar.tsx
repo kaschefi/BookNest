@@ -1,17 +1,19 @@
+
 "use client";
 
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
-import { 
-  Home, 
-  FolderOpen, 
-  Users, 
-  LayoutGrid, 
-  BookOpen, 
-  LogOut, 
-  BookMarked
+import {
+  Home,
+  FolderOpen,
+  Users,
+  LayoutGrid,
+  BookOpen,
+  LogOut,
+  BookMarked,
+  User
 } from "lucide-react";
 
 export function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: boolean) => void }) {
@@ -24,20 +26,21 @@ export function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (va
     { name: "Users", href: "/admin/users", icon: Users },
     { name: "Fields", href: "/admin/fields", icon: LayoutGrid },
     { name: "Lessons", href: "/admin/lessons", icon: BookOpen },
+    { name: "My Profile", href: "/profile", icon: User },
   ];
 
   return (
     <>
       {/* Mobile Backdrop */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-20"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <aside 
+      <aside
         className={`fixed inset-y-0 left-0 bg-white w-64 border-r border-gray-100 flex flex-col transition-transform duration-300 z-30
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
@@ -61,11 +64,10 @@ export function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (va
               <Link
                 key={link.name}
                 href={link.href}
-                className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${
-                  isActive 
-                    ? "bg-indigo-50 text-indigo-600 font-medium" 
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                }`}
+                className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${isActive
+                  ? "bg-indigo-50 text-indigo-600 font-medium"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
               >
                 <Icon className={`h-5 w-5 ${isActive ? "text-indigo-600" : "text-gray-400"}`} />
                 <span>{link.name}</span>
@@ -75,7 +77,7 @@ export function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (va
         </nav>
 
         <div className="p-4 border-t border-gray-100">
-          <button 
+          <button
             onClick={handleSignOut}
             className="flex w-full items-center space-x-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-colors"
           >
@@ -87,3 +89,4 @@ export function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (va
     </>
   );
 }
+

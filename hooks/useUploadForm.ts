@@ -305,6 +305,10 @@ export function useUploadForm() {
             setError("Please choose a file to upload.");
             return;
         }
+        if (!year || year < 1900 || year > 2100) {
+            setError("Please enter a valid 4-digit year (e.g., 2024).");
+            return;
+        }
 
         setUploading(true);
 

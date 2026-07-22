@@ -13,6 +13,7 @@ export default function Navbar({ toggleSidebar, hideSidebarButton, hideLogo }: {
     const isBooksActive = pathname ? pathname.startsWith("/books") : false;
     const isNotesActive = pathname ? pathname.startsWith("/notes") : false;
     const isSubjectsActive = pathname ? pathname.startsWith("/subjects") : false;
+    const isResourcesActive = pathname ? pathname.startsWith("/resources") : false;
 
     return (
         <nav className="relative z-20 w-full max-w-7xl flex justify-between items-center py-4">
@@ -67,12 +68,31 @@ export default function Navbar({ toggleSidebar, hideSidebarButton, hideLogo }: {
                         </svg>
                     )}
                 </Link>
+                <Link href="/resources" className={`relative pb-1 hover:text-blue-600 transition-colors ${isResourcesActive ? "text-slate-900 font-semibold" : ""}`}>
+                    Resources
+                    {isResourcesActive && (
+                        <svg className="absolute left-0 bottom-[-4px] w-full h-[6px] text-amber-500 pointer-events-none" viewBox="0 0 100 10" preserveAspectRatio="none">
+                            <path d="M2,6 Q50,2 98,6" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                        </svg>
+                    )}
+                </Link>
+
+                {isLoggedIn && !isAdmin && (
+                    <Link href="/profile" className={`relative pb-1 hover:text-blue-600 transition-colors ${pathname?.startsWith("/profile") ? "text-slate-900 font-semibold" : ""}`}>
+                        Profile
+                        {pathname?.startsWith("/profile") && (
+                            <svg className="absolute left-0 bottom-[-4px] w-full h-[6px] text-blue-500 pointer-events-none" viewBox="0 0 100 10" preserveAspectRatio="none">
+                                <path d="M2,6 Q50,2 98,6" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                            </svg>
+                        )}
+                    </Link>
+                )}
 
                 {isAdmin && (
                     <Link href="/admin" className={`relative pb-1 hover:text-blue-600 transition-colors ${pathname?.startsWith("/admin") ? "text-slate-900 font-semibold" : ""}`}>
                         Admin Panel
                         {pathname?.startsWith("/admin") && (
-                            <svg className="absolute left-0 bottom-[-4px] w-full h-[6px] text-blue-500 pointer-events-none" viewBox="0 0 100 10" preserveAspectRatio="none">
+                            <svg className="absolute left-0 bottom-[-4px] w-full h-[6px] text-purple-500 pointer-events-none" viewBox="0 0 100 10" preserveAspectRatio="none">
                                 <path d="M2,6 Q50,2 98,6" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
                             </svg>
                         )}
@@ -82,15 +102,7 @@ export default function Navbar({ toggleSidebar, hideSidebarButton, hideLogo }: {
 
             {/* Right Side */}
             <div className="flex items-center gap-4">
-                {/* Auth Button */}
-                {isLoggedIn ? (
-                    <button
-                        onClick={handleSignOut}
-                        className="bg-white border-2 border-blue-600 hover:bg-blue-50 text-blue-600 px-5 py-2 rounded-full text-sm font-medium transition-all"
-                    >
-                        Sign Out
-                    </button>
-                ) : (
+                {!isLoggedIn && (
                     <Link
                         href="/login"
                         className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full text-sm font-medium transition-colors"
