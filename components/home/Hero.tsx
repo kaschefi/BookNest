@@ -19,12 +19,12 @@ export default function Hero() {
             </div>
 
             <p className="text-lg md:text-xl text-slate-600 font-hand text-center max-w-xl mx-auto leading-relaxed pt-2">
-                Explore books, notes and resources across Computer Science, Mathematics, Chemistry, Physics and more.
+                Explore subjects, notes and resources across Computer Science, Mathematics, Chemistry, Physics and more.
             </p>
 
             <div className="flex flex-row items-center justify-center gap-4 pt-8">
-                <Link href="/books" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full font-medium transition-all shadow-md shadow-blue-600/20">
-                    Explore Books
+                <Link href="/subjects" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full font-medium transition-all shadow-md shadow-blue-600/20">
+                    Explore Subjects
                 </Link>
                 <Link href="/notes" className="bg-white border-2 border-blue-600 hover:bg-blue-50 text-blue-600 px-8 py-3 rounded-full font-medium transition-all">
                     Browse Notes
