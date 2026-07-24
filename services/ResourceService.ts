@@ -40,13 +40,19 @@ export async function getResources(query: ResourceQuery = {}) {
     await connectDB();
 
     const {
-        lessonId, type, status = "approved",
+        lessonId, type, status,
         semester, year, search,
         sortBy = "newest",
         page = 1, limit = DEFAULT_LIMIT,
     } = query;
 
-    const filter: Record<string, unknown> = { status };
+    const filter: Record<string, unknown> = {};
+
+    if (status) {
+        filter.status = status;
+    } else {
+        filter.status = { $ne: "rejected" };
+    }
 
     if (lessonId)  filter.lesson   = lessonId;
     if (type)      filter.type     = type;

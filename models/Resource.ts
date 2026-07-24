@@ -35,7 +35,7 @@ const ResourceSchema = new Schema<IResource>(
         mimeType: { type: String },
         size: { type: Number },
         uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-        status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
+        status: { type: String, enum: ["pending", "approved", "rejected"], default: "approved" },
         reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
         reviewNote: { type: String },
         semester: { type: String, enum: ["fall", "spring", "summer"], required: true },

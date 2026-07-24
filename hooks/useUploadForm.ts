@@ -342,7 +342,12 @@ export function useUploadForm() {
                 body: JSON.stringify(payload)
             });
 
-            const data = await response.json();
+            let data;
+            try {
+                data = await response.json();
+            } catch {
+                data = { message: "Upload server error. Please try again." };
+            }
 
             if (response.ok) {
                 resetFormFields();

@@ -14,7 +14,7 @@ export default function ResourcesPage() {
 
     const handleVote = async (resourceId: string, value: 1 | -1) => {
         if (!isLoggedIn) {
-            alert("Please sign in to vote on resources.");
+            alert("Please sign in to vote on notes.");
             return;
         }
 
@@ -67,10 +67,10 @@ export default function ResourcesPage() {
                 {/* Header Title */}
                 <div className="text-center mb-8">
                     <h1 className="text-4xl md:text-5xl font-extrabold text-[#2a2d64] tracking-tight uppercase font-sans">
-                        Resource Search & Directory
+                        Notes Search & Directory
                     </h1>
                     <p className="font-hand text-[22px] text-slate-700 font-medium text-center mt-2 max-w-2xl mx-auto">
-                        Search and filter midterms, finals, pamphlets, and study notes across all topics.
+                        Search and filter study notes, midterms, finals, and pamphlets across all subjects and lessons.
                     </p>
                 </div>
 
@@ -82,7 +82,7 @@ export default function ResourcesPage() {
                             <Search className="w-6 h-6 ml-4 text-slate-400" />
                             <input
                                 type="text"
-                                placeholder="Full-text search notes, midterms, exam titles, topics..."
+                                placeholder="Search notes by title, topic, or lesson..."
                                 value={filters.search || ""}
                                 onChange={(e) => updateFilter("search", e.target.value)}
                                 className="w-full pl-3 pr-4 py-3.5 bg-transparent text-slate-800 font-sans text-base focus:outline-none placeholder-slate-400"
@@ -95,7 +95,7 @@ export default function ResourcesPage() {
                         {/* Type Filter */}
                         <div>
                             <label className="block text-sm font-hand text-slate-700 font-bold mb-1">
-                                Resource Type:
+                                Note Type:
                             </label>
                             <select
                                 value={filters.type || ""}
@@ -161,7 +161,7 @@ export default function ResourcesPage() {
                 {/* Results Indicator */}
                 <div className="w-full flex items-center justify-between mb-4">
                     <span className="font-hand text-xl text-slate-700 font-bold">
-                        Found {pagination.total} resource{pagination.total === 1 ? "" : "s"}
+                        Found {pagination.total} note{pagination.total === 1 ? "" : "s"}
                     </span>
                     {loading && <span className="text-sm font-semibold text-blue-600 animate-pulse">Searching Nest...</span>}
                 </div>
@@ -178,7 +178,7 @@ export default function ResourcesPage() {
                     {!loading && resources.length === 0 ? (
                         <div className="col-span-full text-center py-16 bg-white/60 border border-slate-300 rounded-2xl p-8">
                             <FileText className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-                            <p className="font-hand text-2xl text-slate-700 font-bold">No matching resources found.</p>
+                            <p className="font-hand text-2xl text-slate-700 font-bold">No matching notes found.</p>
                             <p className="font-hand text-lg text-slate-500 mt-1">Try clearing your filters or typing different search terms.</p>
                         </div>
                     ) : (

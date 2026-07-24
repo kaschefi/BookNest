@@ -71,57 +71,76 @@ async function getUploadUser(req: NextApiRequest, res: NextApiResponse): Promise
 //   }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    // ── GET: list resources with filters + pagination ─────────────────────────
-    if (req.method === "GET") {
-        const { page, limit, lessonId, type, semester, year, search, sortBy } = req.query;
+    try {
+        // ── GET: list resources with filters + pagination ─────────────────────────
+        if (req.method === "GET") {
+            const { page, limit, lessonId, type, semester, year, search, sortBy, status } = req.query;
 
-        const result = await getResources({
-            page:     page     ? Number(page)  : 1,
-            limit:    limit    ? Number(limit) : 20,
-            lessonId: lessonId as string | undefined,
-            type:     type     as "midterm" | "final" | "pamphlet" | undefined,
-            semester: semester as "fall" | "spring" | "summer" | undefined,
-            year:     year     ? Number(year)  : undefined,
-            search:   search   as string | undefined,
-            sortBy:   sortBy   as "newest" | "popular" | "votes" | undefined,
-        });
+            const result = await getResources({
+                page:     page     ? Number(page)  : 1,
+                limit:    limit    ? Number(limit) : 20,
+                lessonId: lessonId as string | undefined,
+                type:     type     as "midterm" | "final" | "pamphlet" | undefined,
+                semester: semester as "fall" | "spring" | "summer" | undefined,
+                year:     year     ? Number(year)  : undefined,
+                search:   search   as string | undefined,
+                sortBy:   sortBy   as "newest" | "popular" | "votes" | undefined,
+                status:   status   as "pending" | "approved" | "rejected" | undefined,
+            });
 
-        return res.status(200).json(result);
-    }
-
-    // ── POST: upload a new resource ───────────────────────────────────────────
-    if (req.method === "POST") {
-        const uploadUser = await getUploadUser(req, res);
-        if (!uploadUser) return res.status(401).json({ message: "Unauthorized" });
-
-        if (!hasPermission(uploadUser.role, "upload")) {
-            return res.status(403).json({ message: "Forbidden" });
+            return res.status(200).json(result);
         }
 
-        const { title, lesson, type, semester, year, file } = req.body;
+        // ── POST: upload a new resource ───────────────────────────────────────────
+        if (req.method === "POST") {
+            const uploadUser = await getUploadUser(req, res);
+            if (!uploadUser) return res.status(401).json({ message: "Unauthorized" });
 
-        if (!title || !lesson || !type || !semester || !year || !file?.data || !file?.filename) {
-            return res.status(400).json({ message: "Missing required fields" });
+            if (!hasPermission(uploadUser.role, "upload")) {
+                return res.status(403).json({ message: "Forbidden" });
+            }
+
+            const { title, lesson, type, semester, year, file } = req.body;
+
+            if (!title || !lesson || !type || !semester || !year || !file?.data || !file?.filename) {
+                return res.status(400).json({ message: "Missing required fields" });
+            }
+
+            // Upload to Cloudinary, with graceful fallback if credentials/Cloudinary error occurs
+            let uploaded;
+            try {
+                uploaded = await uploadFile(file.data, file.filename);
+            } catch (cloudErr: unknown) {
+                const errMsg = cloudErr instanceof Error ? cloudErr.message : String(cloudErr);
+                console.warn("[Cloudinary] Upload failed, falling back to data URL storage:", errMsg);
+                uploaded = {
+                    fileUrl: file.data,
+                    publicId: `local_${Date.now()}_${file.filename.replace(/\s+/g, "_")}`,
+                    mimeType: "application/pdf",
+                    size: file.data.length,
+                };
+            }
+
+            const resource = await createResource({
+                title,
+                lesson,
+                type,
+                semester,
+                year: Number(year),
+                uploadedBy: uploadUser.id,
+                fileUrl:  uploaded.fileUrl,
+                publicId: uploaded.publicId,
+                mimeType: uploaded.mimeType,
+                size:     uploaded.size,
+            });
+
+            return res.status(201).json(resource);
         }
 
-        // Upload to Cloudinary, then save metadata to DB
-        const uploaded = await uploadFile(file.data, file.filename);
-
-        const resource = await createResource({
-            title,
-            lesson,
-            type,
-            semester,
-            year: Number(year),
-            uploadedBy: uploadUser.id,
-            fileUrl:  uploaded.fileUrl,
-            publicId: uploaded.publicId,
-            mimeType: uploaded.mimeType,
-            size:     uploaded.size,
-        });
-
-        return res.status(201).json(resource);
+        return res.status(405).json({ message: "Method not allowed" });
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Internal Server Error";
+        console.error("API /api/files error:", err);
+        return res.status(500).json({ message });
     }
-
-    return res.status(405).json({ message: "Method not allowed" });
 }

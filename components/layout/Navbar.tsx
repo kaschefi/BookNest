@@ -44,7 +44,7 @@ export default function Navbar({ toggleSidebar, hideSidebarButton, hideLogo }: {
                     )}
                 </Link>
                 <Link href="/notes" className={`relative pb-1 hover:text-blue-600 transition-colors ${isNotesActive ? "text-slate-900 font-semibold" : ""}`}>
-                    Notes
+                    Upload Notes
                     {isNotesActive && (
                         <svg className="absolute left-0 bottom-[-4px] w-full h-[6px] text-red-500 pointer-events-none" viewBox="0 0 100 10" preserveAspectRatio="none">
                             <path d="M2,6 Q50,2 98,6" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
@@ -60,7 +60,7 @@ export default function Navbar({ toggleSidebar, hideSidebarButton, hideLogo }: {
                     )}
                 </Link>
                 <Link href="/resources" className={`relative pb-1 hover:text-blue-600 transition-colors ${isResourcesActive ? "text-slate-900 font-semibold" : ""}`}>
-                    Resources
+                    Search
                     {isResourcesActive && (
                         <svg className="absolute left-0 bottom-[-4px] w-full h-[6px] text-amber-500 pointer-events-none" viewBox="0 0 100 10" preserveAspectRatio="none">
                             <path d="M2,6 Q50,2 98,6" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
