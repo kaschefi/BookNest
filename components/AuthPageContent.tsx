@@ -186,11 +186,6 @@ function AuthPageContentInner() {
                     )}
                   </div>
                 </div>
-                {isLogin && (
-                  <div className="w-full flex justify-end mt-1">
-                    <a href="#" className="text-sm font-hand text-blue-500 hover:text-blue-700 hover:underline">Forgot password?</a>
-                  </div>
-                )}
               </div>
 
               {!isLogin && (
