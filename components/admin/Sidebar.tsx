@@ -76,6 +76,8 @@ export function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (va
           })}
         </nav>
 
+
+
         <div className="p-4 border-t border-gray-100">
           <button
             onClick={handleSignOut}
