@@ -27,7 +27,7 @@ export default function Hero() {
                     Explore Subjects
                 </Link>
                 <Link href="/notes" className="bg-white border-2 border-blue-600 hover:bg-blue-50 text-blue-600 px-8 py-3 rounded-full font-medium transition-all">
-                    Browse Notes
+                    Upload Notes
                 </Link>
             </div>
         </div>

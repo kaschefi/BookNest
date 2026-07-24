@@ -6,6 +6,7 @@ import RoughCardBackground from "@/components/RoughCardBackground";
 import { useResources, Resource, ResourceFilters } from "@/hooks/useResources";
 import { Search, Download, ThumbsUp, ThumbsDown, Eye, Filter, ArrowLeft, ArrowRight, FileText } from "lucide-react";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
+import { triggerFileDownload } from "@/lib/download";
 
 export default function ResourcesPage() {
     const { resources, loading, error, filters, pagination, updateFilter, refetch } = useResources();
@@ -46,13 +47,10 @@ export default function ResourcesPage() {
         }
     };
 
-    const handleDownload = async (resource: Resource) => {
-        try {
-            await fetch(`/api/files/${resource._id}/download`, { method: "POST" });
-        } catch (err) {
-            console.error("Failed to increment download count:", err);
-        }
-        window.open(resource.fileUrl, "_blank");
+    const handleDownload = (resource: Resource) => {
+        fetch(`/api/files/${resource._id}/download`, { method: "POST" }).catch(() => {});
+        const fileName = `${resource.title.replace(/[^a-zA-Z0-9_\-]/g, "_")}.pdf`;
+        triggerFileDownload(resource.fileUrl, fileName);
     };
 
     return (

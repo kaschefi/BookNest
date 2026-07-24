@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
 import { useAuthStatus } from "./useAuthStatus";
 import { subjectStaticData } from "@/lib/subjectData";
+import { triggerFileDownload } from "@/lib/download";
 
 export interface MergedLesson {
     _id: string | null;
@@ -266,21 +267,17 @@ export function useSubjectLessons() {
     const paginatedLessons = filteredLessons.slice(startIndex, startIndex + lessonsPerPage);
 
     // Handle resource download
-    const handleDownload = async (resource: IResource) => {
-        try {
-            // Trigger download count increment in background
-            await fetch(`/api/files/${resource._id}/download`, { method: "POST" });
-            
-            // Increment local download state
-            setResources(prev =>
-                prev.map(r => r._id === resource._id ? { ...r, downloads: r.downloads + 1 } : r)
-            );
+    const handleDownload = (resource: IResource) => {
+        // Trigger download count increment in background
+        fetch(`/api/files/${resource._id}/download`, { method: "POST" }).catch(() => {});
+        
+        // Increment local download state
+        setResources(prev =>
+            prev.map(r => r._id === resource._id ? { ...r, downloads: r.downloads + 1 } : r)
+        );
 
-            // Open download URL in a new window
-            window.open(resource.fileUrl, "_blank");
-        } catch (err) {
-            console.error("Failed to register download:", err);
-        }
+        const fileName = `${resource.title.replace(/[^a-zA-Z0-9_\-]/g, "_")}.pdf`;
+        triggerFileDownload(resource.fileUrl, fileName);
     };
 
     // Handle casting a vote
