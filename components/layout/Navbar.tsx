@@ -104,10 +104,10 @@ export default function Navbar({ toggleSidebar, hideSidebarButton, hideLogo }: {
             <div className="flex items-center gap-4">
                 {!isLoggedIn && (
                     <Link
-                        href="/login"
+                        href={pathname === "/login" ? "/signup" : "/login"}
                         className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full text-sm font-medium transition-colors"
                     >
-                        Join / Sign In
+                        {pathname === "/login" ? "Sign Up" : "Sign In"}
                     </Link>
                 )}
             </div>

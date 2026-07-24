@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import RoughCardBackground from "@/components/RoughCardBackground";
-import { useResources, Resource } from "@/hooks/useResources";
+import { useResources, Resource, ResourceFilters } from "@/hooks/useResources";
 import { Search, Download, ThumbsUp, ThumbsDown, Eye, Filter, ArrowLeft, ArrowRight, FileText } from "lucide-react";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
 
