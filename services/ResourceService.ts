@@ -1,5 +1,6 @@
 import connectDB from "../lib/mongoose";
 import Resource from "../models/Resource";
+import Lesson from "../models/Lesson";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -59,8 +60,19 @@ export async function getResources(query: ResourceQuery = {}) {
     if (semester)  filter.semester = semester;
     if (year)      filter.year     = year;
 
-    // Full-text search on title (uses the "text" index)
-    if (search) filter.$text = { $search: search };
+    // Case-insensitive partial substring search across title, lesson name, type, and semester
+    if (search && search.trim()) {
+        const regex = new RegExp(search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "i");
+        const matchingLessons = await Lesson.find({ name: regex }).select("_id");
+        const lessonIds = matchingLessons.map((l) => l._id);
+
+        filter.$or = [
+            { title: regex },
+            { type: regex },
+            { semester: regex },
+            ...(lessonIds.length > 0 ? [{ lesson: { $in: lessonIds } }] : []),
+        ];
+    }
 
     const sortMap = {
         newest:  { createdAt: -1 },
@@ -108,7 +120,19 @@ export async function getAdminResources(query: AdminResourceQuery = {}) {
     if (type) filter.type = type;
     if (semester) filter.semester = semester;
     if (year) filter.year = year;
-    if (search) filter.$text = { $search: search };
+
+    if (search && search.trim()) {
+        const regex = new RegExp(search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "i");
+        const matchingLessons = await Lesson.find({ name: regex }).select("_id");
+        const lessonIds = matchingLessons.map((l) => l._id);
+
+        filter.$or = [
+            { title: regex },
+            { type: regex },
+            { semester: regex },
+            ...(lessonIds.length > 0 ? [{ lesson: { $in: lessonIds } }] : []),
+        ];
+    }
 
     const sortMap = {
         newest: { createdAt: -1 },
