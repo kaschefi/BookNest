@@ -59,7 +59,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     setLanguage(language === "en" ? "fa" : "en");
   };
 
-  const t = (key: string, fallback?: string): string => {
+  const t = (key: string, fallback?: string): any => {
     const keys = key.split(".");
     
     // Attempt lookup in current dictionary
@@ -73,7 +73,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    if (typeof current === "string") {
+    if (current !== undefined) {
       return current;
     }
 
@@ -88,7 +88,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    if (typeof fallbackCurrent === "string") {
+    if (fallbackCurrent !== undefined) {
       return fallbackCurrent;
     }
 

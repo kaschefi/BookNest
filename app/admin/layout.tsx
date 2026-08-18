@@ -7,6 +7,7 @@ import { useAuthStatus } from "@/hooks/useAuthStatus";
 import { useRouter } from "next/navigation";
 import MainNavbar from "@/components/layout/Navbar";
 import { Menu } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function AdminLayout({
   children,
@@ -15,6 +16,7 @@ export default function AdminLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { isAdmin, status, isJwtLoggedIn, isInitialized } = useAuthStatus();
+  const { isRTL, t } = useLanguage();
   const router = useRouter();
   const isReady = isInitialized && status !== "loading" && isAdmin;
 
@@ -29,7 +31,7 @@ export default function AdminLayout({
   }, [isAdmin, status, isJwtLoggedIn, isInitialized, router]);
 
   if (!isReady) {
-      return <div className="min-h-screen flex items-center justify-center font-hand text-xl text-slate-600">Verifying access...</div>;
+      return <div className="min-h-screen flex items-center justify-center font-hand text-xl text-slate-600">{t("common.verifyingAccess", "در حال بررسی دسترسی...")}</div>;
   }
 
   return (

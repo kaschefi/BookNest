@@ -5,6 +5,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
+import { useLanguage } from "@/context/LanguageContext";
 import {
   Home,
   FolderOpen,
@@ -19,14 +20,15 @@ import {
 export function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: boolean) => void }) {
   const pathname = usePathname();
   const { handleSignOut } = useAuthStatus();
+  const { t, isRTL } = useLanguage();
 
   const links = [
-    { name: "Dashboard", href: "/admin", icon: Home },
-    { name: "Files & Resources", href: "/admin/resources", icon: FolderOpen },
-    { name: "Users", href: "/admin/users", icon: Users },
-    { name: "Fields", href: "/admin/fields", icon: LayoutGrid },
-    { name: "Lessons", href: "/admin/lessons", icon: BookOpen },
-    { name: "My Profile", href: "/profile", icon: User },
+    { name: t("admin.sidebar.dashboard"), href: "/admin", icon: Home },
+    { name: t("admin.sidebar.filesAndResources"), href: "/admin/resources", icon: FolderOpen },
+    { name: t("admin.sidebar.users"), href: "/admin/users", icon: Users },
+    { name: t("admin.sidebar.fields"), href: "/admin/fields", icon: LayoutGrid },
+    { name: t("admin.sidebar.lessons"), href: "/admin/lessons", icon: BookOpen },
+    { name: t("admin.sidebar.myProfile"), href: "/profile", icon: User },
   ];
 
   return (
@@ -41,6 +43,7 @@ export function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (va
 
       {/* Sidebar */}
       <aside
+        dir="ltr"
         className={`fixed inset-y-0 left-0 bg-white w-64 border-r border-gray-100 flex flex-col transition-transform duration-300 z-30
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
@@ -62,7 +65,7 @@ export function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (va
             const Icon = link.icon;
             return (
               <Link
-                key={link.name}
+                key={link.href}
                 href={link.href}
                 className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${isActive
                   ? "bg-indigo-50 text-indigo-600 font-medium"
@@ -76,15 +79,13 @@ export function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (va
           })}
         </nav>
 
-
-
         <div className="p-4 border-t border-gray-100">
           <button
             onClick={handleSignOut}
             className="flex w-full items-center space-x-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-colors"
           >
             <LogOut className="h-5 w-5" />
-            <span className="font-medium">Logout</span>
+            <span className="font-medium">{t("admin.sidebar.logout")}</span>
           </button>
         </div>
       </aside>

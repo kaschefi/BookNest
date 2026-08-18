@@ -65,6 +65,54 @@ export default function SubjectLessonsPage() {
     };
     const displayName = subjectTitleMap[subjectSlug] || fieldName || activeStatic.name;
 
+    // Subtitle & Footer translations
+    const subtitleMap: Record<string, string> = {
+        "mathematics": t("subjectDetails.mathematics.subtitle"),
+        "computer-science": t("subjectDetails.computerScience.subtitle"),
+        "chemistry": t("subjectDetails.chemistry.subtitle"),
+        "physics": t("subjectDetails.physics.subtitle"),
+    };
+    const displaySubtitle = subtitleMap[subjectSlug] || activeStatic.subtitle;
+
+    const footerMap: Record<string, string> = {
+        "mathematics": t("subjectDetails.mathematics.footerText"),
+        "computer-science": t("subjectDetails.computerScience.footerText"),
+        "chemistry": t("subjectDetails.chemistry.footerText"),
+        "physics": t("subjectDetails.physics.footerText"),
+    };
+    const displayFooterText = footerMap[subjectSlug] || activeStatic.footerText;
+
+    const lessonsDict = (t("subjectDetails.lessons") as unknown) as Record<string, { name: string; description: string }>;
+
+    const getTranslatedLesson = (rawName: string, rawDesc: string, faName?: string) => {
+        if (!rawName) return { name: rawName, description: rawDesc };
+        const dict = lessonsDict;
+        if (dict && typeof dict === "object") {
+            if (dict[rawName]) {
+                return {
+                    name: dict[rawName].name || rawName,
+                    description: dict[rawName].description || rawDesc
+                };
+            }
+
+            const targetKey = Object.keys(dict).find(
+                (k) => k.trim().toLowerCase() === rawName.trim().toLowerCase()
+            );
+            if (targetKey && dict[targetKey]) {
+                return {
+                    name: dict[targetKey].name || rawName,
+                    description: dict[targetKey].description || rawDesc
+                };
+            }
+        }
+
+        if (isRTL && faName) {
+            return { name: faName, description: rawDesc };
+        }
+
+        return { name: rawName, description: rawDesc };
+    };
+
     // Tabbed resources
     const midterms = resources.filter((r) => r.type === "midterm");
     const finals = resources.filter((r) => r.type === "final");
@@ -299,7 +347,7 @@ export default function SubjectLessonsPage() {
                         </div>
                     </div>
                     <p className="font-hand text-[22px] text-slate-700 font-medium text-center mt-4">
-                        {activeStatic.subtitle}
+                        {displaySubtitle}
                     </p>
                 </div>
 
@@ -353,37 +401,41 @@ export default function SubjectLessonsPage() {
                             </div>
                         ) : (
                             <div className="flex flex-col w-full divide-y divide-slate-200 z-10">
-                                {paginatedLessons.map((lesson) => (
-                                    <div
-                                        key={lesson.index}
-                                        onClick={() => setSelectedLesson(lesson)}
-                                        className="group/item flex items-center justify-between py-5 cursor-pointer hover:bg-slate-50/55 rounded-lg px-2 -mx-2 transition-all duration-200"
-                                    >
-                                        <div className="flex items-start gap-4">
-                                            {/* Index Circle Indicator */}
-                                            <div className="w-9 h-9 min-w-9 rounded-full border-1.5 border-slate-600 bg-white flex items-center justify-center font-hand text-[19px] font-bold text-slate-700 shadow-sm transform group-hover/item:rotate-[-6deg] group-hover/item:scale-105 transition-all">
-                                                {lesson.index}
+                                {paginatedLessons.map((lesson) => {
+                                    const { name: lessonName, description: lessonDesc } = getTranslatedLesson(lesson.name, lesson.description, (lesson as any).faName);
+
+                                    return (
+                                        <div
+                                            key={lesson.index}
+                                            onClick={() => setSelectedLesson(lesson)}
+                                            className="group/item flex items-center justify-between py-5 cursor-pointer hover:bg-slate-50/55 rounded-lg px-2 -mx-2 transition-all duration-200"
+                                        >
+                                            <div className="flex items-start gap-4">
+                                                {/* Index Circle Indicator */}
+                                                <div className="w-9 h-9 min-w-9 rounded-full border-1.5 border-slate-600 bg-white flex items-center justify-center font-hand text-[19px] font-bold text-slate-700 shadow-sm transform group-hover/item:rotate-[-6deg] group-hover/item:scale-105 transition-all">
+                                                    {lesson.index}
+                                                </div>
+
+                                                {/* Lesson Metadata */}
+                                                <div className="flex flex-col">
+                                                    <h4 className="font-sans text-[18px] font-bold text-slate-800 leading-snug group-hover/item:text-blue-700 transition-colors">
+                                                        {lessonName}
+                                                    </h4>
+                                                    <p className="font-hand text-[17px] text-slate-500 leading-tight mt-0.5 max-w-[430px] font-medium">
+                                                        {lessonDesc}
+                                                    </p>
+                                                </div>
                                             </div>
 
-                                            {/* Lesson Metadata */}
-                                            <div className="flex flex-col">
-                                                <h4 className="font-sans text-[18px] font-bold text-slate-800 leading-snug group-hover/item:text-blue-700 transition-colors">
-                                                    {lesson.name}
-                                                </h4>
-                                                <p className="font-hand text-[17px] text-slate-500 leading-tight mt-0.5 max-w-[430px] font-medium">
-                                                    {lesson.description}
-                                                </p>
+                                            {/* Right Chevron arrow */}
+                                            <div className="text-slate-400 group-hover/item:text-blue-600 group-hover/item:translate-x-1.5 rtl:group-hover/item:-translate-x-1.5 rtl:rotate-180 transition-all duration-200 pr-1 shrink-0">
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                                                </svg>
                                             </div>
                                         </div>
-
-                                        {/* Right Chevron arrow */}
-                                        <div className="text-slate-400 group-hover/item:text-blue-600 group-hover/item:translate-x-1.5 rtl:group-hover/item:-translate-x-1.5 rtl:rotate-180 transition-all duration-200 pr-1 shrink-0">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
@@ -446,7 +498,7 @@ export default function SubjectLessonsPage() {
                 {/* ================= HANDWRITTEN FOOTER ================= */}
                 <div className="relative text-center mt-4">
                     <p className="font-hand text-[26px] text-slate-800 font-bold select-none relative inline-block">
-                        {activeStatic.footerText}
+                        {displayFooterText}
                         <span className="absolute -bottom-3 left-0 w-[110%] h-6 -ml-[5%] opacity-90 mix-blend-multiply select-none pointer-events-none">
                             <Image src="/formula_underline.png" alt="Underline" fill className="object-contain contrast-[1.1] brightness-[1.1]" />
                         </span>
@@ -473,19 +525,25 @@ export default function SubjectLessonsPage() {
 
                         <div className="relative z-10 flex flex-col flex-1">
                             {/* Header */}
-                            <div className="pr-8 rtl:pr-0 rtl:pl-8 mb-4">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <span className="font-hand text-[18px] text-blue-600 font-bold border border-blue-400 bg-blue-50 px-2 py-0.5 rounded transform -rotate-1 shadow-sm">
-                                        {t("subjects.lessonBadge")} {selectedLesson.index}
-                                    </span>
-                                </div>
-                                <h2 className="text-2xl md:text-3xl font-extrabold text-[#2a2d64] leading-snug">
-                                    {selectedLesson.name}
-                                </h2>
-                                <p className="font-hand text-[17px] text-slate-500 leading-tight mt-1">
-                                    {selectedLesson.description}
-                                </p>
-                            </div>
+                            {(() => {
+                                const { name: modalLessonName, description: modalLessonDesc } = getTranslatedLesson(selectedLesson.name, selectedLesson.description, (selectedLesson as any).faName);
+
+                                return (
+                                    <div className="pr-8 rtl:pr-0 rtl:pl-8 mb-4">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="font-hand text-[18px] text-blue-600 font-bold border border-blue-400 bg-blue-50 px-2 py-0.5 rounded transform -rotate-1 shadow-sm">
+                                                {t("subjects.lessonBadge")} {selectedLesson.index}
+                                            </span>
+                                        </div>
+                                        <h2 className="text-2xl md:text-3xl font-extrabold text-[#2a2d64] leading-snug">
+                                            {modalLessonName}
+                                        </h2>
+                                        <p className="font-hand text-[17px] text-slate-500 leading-tight mt-1">
+                                            {modalLessonDesc}
+                                        </p>
+                                    </div>
+                                );
+                            })()}
 
                             {/* Resource Categories Tabs */}
                             <div className="flex border border-slate-400 rounded-lg overflow-hidden bg-[#fdfaf6] shadow-sm mb-5 text-[17px] font-hand font-bold">

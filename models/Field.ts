@@ -8,8 +8,10 @@ function slugify(text: string): string {
         .replace(/\s+/g, "-");
 }
 
-interface IField {
+export interface IField {
+    _id?: any;
     name: string;
+    faName?: string;
     slug: string;
     createdAt?: Date;
     updatedAt?: Date;
@@ -18,6 +20,7 @@ interface IField {
 const FieldSchema = new Schema<IField>(
     {
         name: { type: String, required: true, unique: true, trim: true },
+        faName: { type: String, required: false, trim: true },
         slug: { type: String, unique: true, index: true }
     },
     { timestamps: true }
@@ -31,5 +34,9 @@ FieldSchema.pre("save", function () {
     }
 });
 
-const Field = models.Field || model<IField>("Field", FieldSchema);
+if (models.Field) {
+    delete (models as Record<string, unknown>).Field;
+}
+
+const Field = model<IField>("Field", FieldSchema);
 export default Field;

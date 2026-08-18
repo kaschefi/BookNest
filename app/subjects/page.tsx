@@ -98,7 +98,7 @@ const DEFAULT_ICON = (
 export default function SubjectsDirectory() {
     const [fields, setFields] = useState<IFieldData[]>([]);
     const [loading, setLoading] = useState(true);
-    const { t } = useLanguage();
+    const { t, isRTL } = useLanguage();
 
     useEffect(() => {
         const fetchFields = async () => {
@@ -196,7 +196,7 @@ export default function SubjectsDirectory() {
                             const slug = field.slug || field.name.toLowerCase().replace(/\s+/g, "-");
                             const preset = PRESET_SUBJECTS[slug];
                             const icon = preset?.icon || DEFAULT_ICON;
-                            const displayName = fieldNameMap[slug] || field.name;
+                            const displayName = fieldNameMap[slug] || (isRTL && (field as any).faName ? (field as any).faName : field.name);
                             const description = presetDescMap[slug] || field.description || t("subjects.defaultDescription");
 
                             return (

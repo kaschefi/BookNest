@@ -8,9 +8,11 @@ function slugify(text: string): string {
         .replace(/\s+/g, "-");
 }
 
-interface ILesson {
-    field?: mongoose.Types.ObjectId;
+export interface ILesson {
+    _id?: mongoose.Types.ObjectId | string;
+    field?: mongoose.Types.ObjectId | string;
     name: string;
+    faName?: string;
     slug?: string;
     createdAt?: Date;
     updatedAt?: Date;
@@ -24,6 +26,7 @@ const LessonSchema = new Schema<ILesson>(
             index: true
         },
         name: { type: String, required: true, trim: true },
+        faName: { type: String, required: false, trim: true },
         slug: { type: String, index: true }
     },
     { timestamps: true }
@@ -39,5 +42,9 @@ LessonSchema.pre("save", function () {
 
 LessonSchema.index({ field: 1, name: 1 }, { unique: true, sparse: true });
 
-const Lesson = models.Lesson || model<ILesson>("Lesson", LessonSchema);
+if (models.Lesson) {
+    delete (models as Record<string, unknown>).Lesson;
+}
+
+const Lesson = model<ILesson>("Lesson", LessonSchema);
 export default Lesson;

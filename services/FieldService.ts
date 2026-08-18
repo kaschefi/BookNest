@@ -1,5 +1,6 @@
 import connectDB from "../lib/mongoose";
 import Field from "../models/Field";
+import { autoTranslateFieldName } from "../lib/translationService";
 
 export async function getAllFields() {
     await connectDB();
@@ -18,12 +19,27 @@ export async function getFieldBySlug(slug: string) {
 
 export async function createField(data: { name: string }) {
     await connectDB();
-    return Field.create(data);
+
+    // Auto-translate field name (English <-> Farsi)
+    const { name: enName, faName } = await autoTranslateFieldName(data.name);
+
+    return Field.create({
+        name: enName,
+        faName: faName
+    });
 }
 
 export async function updateField(id: string, data: { name?: string }) {
     await connectDB();
-    return Field.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+    let updateData: Record<string, unknown> = { ...data };
+
+    if (data.name) {
+        const { name: enName, faName } = await autoTranslateFieldName(data.name);
+        updateData.name = enName;
+        updateData.faName = faName;
+    }
+
+    return Field.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
 }
 
 export async function deleteField(id: string) {

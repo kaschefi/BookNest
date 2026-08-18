@@ -4,6 +4,7 @@ import React from "react";
 import { useAdminResources, AdminResourceItem } from "@/hooks/useAdminResources";
 import { FileText, File, FileArchive, FileCode, Check, X, Trash2, Search, ExternalLink } from "lucide-react";
 import RoughCardBackground from "@/components/RoughCardBackground";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function ResourcesAdminPage() {
   const {
@@ -16,6 +17,35 @@ export default function ResourcesAdminPage() {
     handleReview,
     handleDelete
   } = useAdminResources();
+  const { t } = useLanguage();
+
+  const lessonsDict = (t("subjectDetails.lessons") as unknown) as Record<string, { name: string; description: string }>;
+
+  const getTranslatedLessonName = (rawName?: string) => {
+    if (!rawName) return t("common.unassigned", "تعیین نشده");
+    const dict = lessonsDict;
+    if (typeof dict !== "object" || !dict) return rawName;
+
+    if (dict[rawName]?.name) return dict[rawName].name;
+
+    const targetKey = Object.keys(dict).find(
+      (k) => k.trim().toLowerCase() === rawName.trim().toLowerCase()
+    );
+    if (targetKey && dict[targetKey]?.name) {
+      return dict[targetKey].name;
+    }
+
+    return rawName;
+  };
+
+  const getTranslatedType = (type?: string) => {
+    if (!type) return "";
+    const lower = type.toLowerCase();
+    if (lower === "midterm") return t("notes.midterm");
+    if (lower === "final") return t("notes.final");
+    if (lower === "pamphlet") return t("notes.pamphlet");
+    return type;
+  };
 
   const getFileIcon = (title: string) => {
     const ext = title.split('.').pop()?.toLowerCase();
@@ -49,34 +79,34 @@ export default function ResourcesAdminPage() {
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-gray-100">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Resource Moderation</h1>
-          <p className="text-gray-500 mt-1">Review student uploads, approve study notes, or reject materials</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t("admin.resourcesPage.title")}</h1>
+          <p className="text-gray-500 mt-1">{t("admin.resourcesPage.subtitle")}</p>
         </div>
-        <div className="mt-4 sm:mt-0 flex items-center space-x-3">
+        <div className="mt-4 sm:mt-0 flex items-center space-x-3 rtl:space-x-reverse">
           <div className="relative">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 rtl:left-auto rtl:right-3 top-2.5 h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search files..."
+              placeholder={t("admin.resourcesPage.searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-600 focus:outline-none text-sm bg-white w-64"
+              className="pl-9 pr-4 rtl:pr-9 rtl:pl-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-600 focus:outline-none text-sm bg-white w-64"
             />
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-200 space-x-8">
+      <div className="flex items-center border-b border-gray-200 gap-6 sm:gap-10 px-2 overflow-x-auto">
         {(["all", "pending", "approved", "rejected"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setStatusFilter(tab)}
-            className={`pb-4 text-sm font-semibold capitalize relative transition-colors ${
+            className={`pb-4 px-2 text-sm font-semibold whitespace-nowrap relative transition-colors ${
               statusFilter === tab ? "text-indigo-600 border-b-2 border-indigo-600" : "text-gray-400 hover:text-gray-600"
             }`}
           >
-            {tab}
+            {t(`admin.resourcesPage.tabs.${tab}`)}
           </button>
         ))}
       </div>
@@ -85,25 +115,25 @@ export default function ResourcesAdminPage() {
         <RoughCardBackground />
         <div className="relative z-10">
           {loading ? (
-            <div className="text-center py-12 text-gray-500 text-sm">Loading resources...</div>
+            <div className="text-center py-12 text-gray-500 text-sm">{t("subjects.loadingLessons")}</div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-left rtl:text-right border-collapse">
               <thead>
                 <tr className="border-b border-gray-100 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  <th className="pb-3 pt-2 pl-4">File Name</th>
-                  <th className="pb-3 pt-2">Topic / Lesson</th>
-                  <th className="pb-3 pt-2">Uploaded By</th>
-                  <th className="pb-3 pt-2">Size</th>
-                  <th className="pb-3 pt-2">Status</th>
-                  <th className="pb-3 pt-2 pr-4 text-right">Actions</th>
+                  <th className="pb-3 pt-2 pl-4 rtl:pl-0 rtl:pr-4">{t("admin.resourcesPage.titleHeader")}</th>
+                  <th className="pb-3 pt-2">{t("admin.resourcesPage.typeHeader")}</th>
+                  <th className="pb-3 pt-2">{t("admin.usersPage.userHeader")}</th>
+                  <th className="pb-3 pt-2">{t("admin.resourcesPage.downloadsHeader")}</th>
+                  <th className="pb-3 pt-2">{t("admin.usersPage.statusHeader")}</th>
+                  <th className="pb-3 pt-2 pr-4 rtl:pr-0 rtl:pl-4 text-right rtl:text-left">{t("admin.resourcesPage.actionsHeader")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {resources.map((res: AdminResourceItem) => (
                   <tr key={res._id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="py-4 pl-4">
-                      <div className="flex items-center space-x-3">
+                    <td className="py-4 pl-4 rtl:pl-0 rtl:pr-4">
+                      <div className="flex items-center space-x-3 rtl:space-x-reverse">
                         <div className={`p-2 rounded-lg ${getFileIconBg(res.title)}`}>
                           {getFileIcon(res.title)}
                         </div>
@@ -111,17 +141,19 @@ export default function ResourcesAdminPage() {
                           <p className="font-semibold text-gray-900 text-sm flex items-center">
                             {res.title}
                             {res.fileUrl && (
-                              <a href={res.fileUrl} target="_blank" rel="noreferrer" className="ml-1.5 text-indigo-500 hover:text-indigo-700">
+                              <a href={res.fileUrl} target="_blank" rel="noreferrer" className="ml-1.5 rtl:ml-0 rtl:mr-1.5 text-indigo-500 hover:text-indigo-700">
                                 <ExternalLink className="h-3.5 w-3.5" />
                               </a>
                             )}
                           </p>
-                          <p className="text-xs text-gray-400 capitalize">{res.type} • {res.semester} {res.year}</p>
+                          <p className="text-xs text-gray-400">
+                            {getTranslatedType(res.type)} • {res.semester} {res.year}
+                          </p>
                         </div>
                       </div>
                     </td>
                     <td className="py-4 text-sm text-gray-700 font-medium">
-                      {res.lesson?.name || "Unassigned"}
+                      {getTranslatedLessonName(res.lesson?.name)}
                     </td>
                     <td className="py-4 text-sm text-gray-600">
                       <div>
@@ -138,7 +170,9 @@ export default function ResourcesAdminPage() {
                         res.status === "pending" ? "bg-amber-50 text-amber-700" :
                         "bg-red-50 text-red-700"
                       }`}>
-                        {res.status}
+                        {res.status === "approved" ? t("admin.resourcesPage.tabs.approved") :
+                         res.status === "pending" ? t("admin.resourcesPage.tabs.pending") :
+                         t("admin.resourcesPage.tabs.rejected")}
                       </span>
                     </td>
                     <td className="py-4 pr-4 text-right">

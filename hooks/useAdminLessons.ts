@@ -10,6 +10,7 @@ export interface FieldReference {
 export interface LessonItem {
   _id: string;
   name: string;
+  faName?: string;
   slug?: string;
   field?: string | FieldReference;
 }

@@ -4,6 +4,7 @@ import { useAdmin } from "@/app/admin/AdminContext";
 export interface FieldItem {
   _id: string;
   name: string;
+  faName?: string;
   slug: string;
 }
 
