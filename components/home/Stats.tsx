@@ -3,6 +3,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import rough from 'roughjs';
+import { useLanguage } from "@/context/LanguageContext";
 
 // Helper component to render the sketchy background
 function RoughCardBackground() {
@@ -66,6 +67,7 @@ export default function Stats() {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [showLeftScroll, setShowLeftScroll] = useState(false);
     const [showRightScroll, setShowRightScroll] = useState(true);
+    const { t, isRTL } = useLanguage();
 
     const checkScrollButtons = () => {
         if (scrollContainerRef.current) {
@@ -106,7 +108,7 @@ export default function Stats() {
 
     const subjects = [
         {
-            name: "Computer\nScience",
+            name: t("subjectsSection.computerScience"),
             icon: (
                 <div className="relative w-[80px] h-[80px] mb-4 flex justify-center items-center">
                     <Image
@@ -121,7 +123,7 @@ export default function Stats() {
             href: "/subjects/computer-science"
         },
         {
-            name: "Mathematics",
+            name: t("subjectsSection.mathematics"),
             icon: (
                 <svg className="w-[80px] h-[80px] text-slate-800 mb-4" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="25" y="20" width="50" height="60" rx="6" />
@@ -136,7 +138,7 @@ export default function Stats() {
             href: "/subjects/mathematics"
         },
         {
-            name: "Chemistry",
+            name: t("subjectsSection.chemistry"),
             icon: (
                 <svg className="w-[80px] h-[80px] text-slate-800 mb-4" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                     <ellipse cx="50" cy="25" rx="8" ry="3" />
@@ -151,7 +153,7 @@ export default function Stats() {
             href: "/subjects/chemistry"
         },
         {
-            name: "Physics",
+            name: t("subjectsSection.physics"),
             icon: (
                 <svg className="w-[80px] h-[80px] text-slate-800 mb-4" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                     <ellipse cx="50" cy="50" rx="35" ry="12" transform="rotate(30 50 50)" />
@@ -164,7 +166,7 @@ export default function Stats() {
             href: "/subjects/physics"
         },
         {
-            name: "More\nSubjects",
+            name: t("subjectsSection.moreSubjects"),
             icon: (
                 <svg className="w-[80px] h-[80px] text-slate-800 mb-4" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M20 75 C20 75 30 70 50 75 C70 70 80 75 80 75 L80 25 C80 25 70 20 50 25 C30 20 20 25 20 25 Z" fill="#f8fafc" />
@@ -233,8 +235,8 @@ export default function Stats() {
                                 </svg>
                             </div>
                             <div className="flex items-center gap-1.5 text-slate-600 font-hand text-lg font-medium group-hover/card:text-blue-600 transition-colors z-10 mb-2">
-                                Explore
-                                <svg className="w-4 h-4 transition-transform duration-300 group-hover/card:translate-x-1" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                                {t("subjectsSection.explore")}
+                                <svg className="w-4 h-4 transition-transform duration-300 group-hover/card:translate-x-1 rtl:group-hover/card:-translate-x-1 rtl:rotate-180" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                                     <path d="M5 12h14m-7-7 7 7-7 7" />
                                 </svg>
                             </div>
