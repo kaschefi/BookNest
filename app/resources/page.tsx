@@ -7,15 +7,17 @@ import { useResources, Resource, ResourceFilters } from "@/hooks/useResources";
 import { Search, Download, ThumbsUp, ThumbsDown, Eye, Filter, ArrowLeft, ArrowRight, FileText } from "lucide-react";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
 import { triggerFileDownload } from "@/lib/download";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function ResourcesPage() {
     const { resources, loading, error, filters, pagination, updateFilter, refetch } = useResources();
     const { isLoggedIn } = useAuthStatus();
     const [userVotes, setUserVotes] = useState<Record<string, number>>({});
+    const { t, isRTL } = useLanguage();
 
     const handleVote = async (resourceId: string, value: 1 | -1) => {
         if (!isLoggedIn) {
-            alert("Please sign in to vote on notes.");
+            alert(t("resourcesPage.signInToVoteAlert"));
             return;
         }
 
@@ -53,6 +55,12 @@ export default function ResourcesPage() {
         triggerFileDownload(resource.fileUrl, fileName);
     };
 
+    const typeLabels: Record<string, string> = {
+        midterm: t("resourcesPage.midterm"),
+        final: t("resourcesPage.final"),
+        pamphlet: t("resourcesPage.extraPamphlet"),
+    };
+
     return (
         <div className="relative min-h-screen flex flex-col items-center overflow-x-hidden pt-4 px-8 pb-12 bg-[#fdfaf6]">
             {/* Lined Notebook Margins */}
@@ -65,10 +73,10 @@ export default function ResourcesPage() {
                 {/* Header Title */}
                 <div className="text-center mb-8">
                     <h1 className="text-4xl md:text-5xl font-extrabold text-[#2a2d64] tracking-tight uppercase font-sans">
-                        Notes Search & Directory
+                        {t("resourcesPage.pageTitle")}
                     </h1>
                     <p className="font-hand text-[22px] text-slate-700 font-medium text-center mt-2 max-w-2xl mx-auto">
-                        Search and filter study notes, midterms, finals, and pamphlets across all subjects and lessons.
+                        {t("resourcesPage.pageSubtitle")}
                     </p>
                 </div>
 
@@ -77,13 +85,13 @@ export default function ResourcesPage() {
                     {/* Search Input */}
                     <div className="relative w-full">
                         <div className="relative flex items-center bg-white border border-slate-400 rounded-xl shadow-sm focus-within:border-blue-500 overflow-hidden">
-                            <Search className="w-6 h-6 ml-4 text-slate-400" />
+                            <Search className="w-6 h-6 ml-4 rtl:ml-0 rtl:mr-4 text-slate-400 shrink-0" />
                             <input
                                 type="text"
-                                placeholder="Search notes by title, topic, or lesson..."
+                                placeholder={t("resourcesPage.searchPlaceholder")}
                                 value={filters.search || ""}
                                 onChange={(e) => updateFilter("search", e.target.value)}
-                                className="w-full pl-3 pr-4 py-3.5 bg-transparent text-slate-800 font-sans text-base focus:outline-none placeholder-slate-400"
+                                className="w-full pl-3 pr-4 rtl:pr-3 rtl:pl-4 py-3.5 bg-transparent text-slate-800 font-sans text-base focus:outline-none placeholder-slate-400"
                             />
                         </div>
                     </div>
@@ -93,61 +101,61 @@ export default function ResourcesPage() {
                         {/* Type Filter */}
                         <div>
                             <label className="block text-sm font-hand text-slate-700 font-bold mb-1">
-                                Note Type:
+                                {t("resourcesPage.noteTypeLabel")}
                             </label>
                             <select
                                 value={filters.type || ""}
                                 onChange={(e) => updateFilter("type", e.target.value as ResourceFilters["type"])}
                                 className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-800 font-sans text-sm focus:outline-none focus:border-blue-500 shadow-sm"
                             >
-                                <option value="">All Types</option>
-                                <option value="midterm">Midterm</option>
-                                <option value="final">Final</option>
-                                <option value="pamphlet">Extra / Pamphlet</option>
+                                <option value="">{t("resourcesPage.allTypes")}</option>
+                                <option value="midterm">{t("resourcesPage.midterm")}</option>
+                                <option value="final">{t("resourcesPage.final")}</option>
+                                <option value="pamphlet">{t("resourcesPage.extraPamphlet")}</option>
                             </select>
                         </div>
 
                         {/* Semester Filter */}
                         <div>
                             <label className="block text-sm font-hand text-slate-700 font-bold mb-1">
-                                Semester:
+                                {t("resourcesPage.semesterLabel")}
                             </label>
                             <select
                                 value={filters.semester || ""}
                                 onChange={(e) => updateFilter("semester", e.target.value as ResourceFilters["semester"])}
                                 className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-800 font-sans text-sm focus:outline-none focus:border-blue-500 shadow-sm capitalize"
                             >
-                                <option value="">All Semesters</option>
-                                <option value="fall">Fall</option>
-                                <option value="spring">Spring</option>
-                                <option value="summer">Summer</option>
+                                <option value="">{t("resourcesPage.allSemesters")}</option>
+                                <option value="fall">{t("notesUpload.semesters.fall")}</option>
+                                <option value="spring">{t("notesUpload.semesters.spring")}</option>
+                                <option value="summer">{t("notesUpload.semesters.summer")}</option>
                             </select>
                         </div>
 
                         {/* Sort By */}
                         <div>
                             <label className="block text-sm font-hand text-slate-700 font-bold mb-1">
-                                Sort By:
+                                {t("resourcesPage.sortByLabel")}
                             </label>
                             <select
                                 value={filters.sortBy || "newest"}
                                 onChange={(e) => updateFilter("sortBy", e.target.value as ResourceFilters["sortBy"])}
                                 className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-800 font-sans text-sm focus:outline-none focus:border-blue-500 shadow-sm"
                             >
-                                <option value="newest">Newest First</option>
-                                <option value="popular">Most Popular (Downloads)</option>
-                                <option value="votes">Highest Voted</option>
+                                <option value="newest">{t("resourcesPage.sortByNewest")}</option>
+                                <option value="popular">{t("resourcesPage.sortByPopular")}</option>
+                                <option value="votes">{t("resourcesPage.sortByVotes")}</option>
                             </select>
                         </div>
 
                         {/* Year Filter */}
                         <div>
                             <label className="block text-sm font-hand text-slate-700 font-bold mb-1">
-                                Year:
+                                {t("resourcesPage.yearLabel")}
                             </label>
                             <input
                                 type="number"
-                                placeholder="e.g. 2025"
+                                placeholder={t("resourcesPage.yearPlaceholder")}
                                 value={filters.year || ""}
                                 onChange={(e) => updateFilter("year", e.target.value ? Number(e.target.value) : "")}
                                 className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-800 font-sans text-sm focus:outline-none focus:border-blue-500 shadow-sm"
@@ -159,9 +167,9 @@ export default function ResourcesPage() {
                 {/* Results Indicator */}
                 <div className="w-full flex items-center justify-between mb-4">
                     <span className="font-hand text-xl text-slate-700 font-bold">
-                        Found {pagination.total} note{pagination.total === 1 ? "" : "s"}
+                        {(pagination.total === 1 ? t("resourcesPage.foundCount") : t("resourcesPage.foundCountPlural")).replace("{total}", String(pagination.total))}
                     </span>
-                    {loading && <span className="text-sm font-semibold text-blue-600 animate-pulse">Searching Nest...</span>}
+                    {loading && <span className="text-sm font-semibold text-blue-600 animate-pulse">{t("resourcesPage.searchingNest")}</span>}
                 </div>
 
                 {/* Error Banner */}
@@ -176,8 +184,8 @@ export default function ResourcesPage() {
                     {!loading && resources.length === 0 ? (
                         <div className="col-span-full text-center py-16 bg-white/60 border border-slate-300 rounded-2xl p-8">
                             <FileText className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-                            <p className="font-hand text-2xl text-slate-700 font-bold">No matching notes found.</p>
-                            <p className="font-hand text-lg text-slate-500 mt-1">Try clearing your filters or typing different search terms.</p>
+                            <p className="font-hand text-2xl text-slate-700 font-bold">{t("resourcesPage.noNotesFoundTitle")}</p>
+                            <p className="font-hand text-lg text-slate-500 mt-1">{t("resourcesPage.noNotesFoundSubtitle")}</p>
                         </div>
                     ) : (
                         resources.map((resItem) => {
@@ -191,10 +199,10 @@ export default function ResourcesPage() {
                                     <div className="relative z-10">
                                         <div className="flex items-center justify-between gap-2 mb-3">
                                             <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${resItem.type === "midterm" ? "bg-amber-100 text-amber-800 border border-amber-300" : resItem.type === "final" ? "bg-red-100 text-red-800 border border-red-300" : "bg-purple-100 text-purple-800 border border-purple-300"}`}>
-                                                {resItem.type}
+                                                {typeLabels[resItem.type] || resItem.type}
                                             </span>
                                             <span className="font-hand text-sm text-slate-600">
-                                                {resItem.semester.toUpperCase()} {resItem.year}
+                                                {t(`notesUpload.semesters.${resItem.semester}`)} {resItem.year}
                                             </span>
                                         </div>
 
@@ -242,7 +250,7 @@ export default function ResourcesPage() {
                                             className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all shadow-sm active:scale-95"
                                         >
                                             <Download className="w-3.5 h-3.5" />
-                                            <span>Download</span>
+                                            <span>{t("resourcesPage.downloadButton")}</span>
                                         </button>
                                     </div>
                                 </div>
@@ -259,19 +267,21 @@ export default function ResourcesPage() {
                             onClick={() => updateFilter("page", pagination.page - 1)}
                             className="flex items-center gap-1 px-4 py-2 bg-white border border-slate-300 rounded-full text-slate-700 text-sm font-semibold hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <ArrowLeft className="w-4 h-4" />
-                            Previous
+                            {isRTL ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
+                            {t("resourcesPage.previousButton")}
                         </button>
                         <span className="font-hand text-lg text-slate-700 font-bold">
-                            Page {pagination.page} of {pagination.totalPages}
+                            {t("resourcesPage.pageIndicator")
+                                .replace("{page}", String(pagination.page))
+                                .replace("{totalPages}", String(pagination.totalPages))}
                         </span>
                         <button
                             disabled={pagination.page >= pagination.totalPages}
                             onClick={() => updateFilter("page", pagination.page + 1)}
                             className="flex items-center gap-1 px-4 py-2 bg-white border border-slate-300 rounded-full text-slate-700 text-sm font-semibold hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Next
-                            <ArrowRight className="w-4 h-4" />
+                            {t("resourcesPage.nextButton")}
+                            {isRTL ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
                         </button>
                     </div>
                 )}

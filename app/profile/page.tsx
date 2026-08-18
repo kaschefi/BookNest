@@ -6,6 +6,7 @@ import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface IUserProfile {
     _id: string;
@@ -22,6 +23,7 @@ interface IUserProfile {
 export default function ProfilePage() {
     const { isLoggedIn, isInitialized, status: authStatus, handleSignOut } = useAuthStatus();
     const router = useRouter();
+    const { t, isRTL } = useLanguage();
 
     const [user, setUser] = useState<IUserProfile | null>(null);
     const [loading, setLoading] = useState(true);
@@ -58,13 +60,13 @@ export default function ProfilePage() {
                     setStudentId(data.student_id || "");
                     setDepartment(data.department || "");
                 } else if (res.status === 401) {
-                    setError("Session expired or unauthorized. Please sign in.");
+                    setError(t("notesUpload.loginRequiredSubtitle"));
                 } else {
-                    setError("Failed to load user profile.");
+                    setError(t("profilePage.profileUpdateFailed"));
                 }
             } catch (err) {
                 console.error("Error fetching profile:", err);
-                setError("An unexpected error occurred while fetching your profile.");
+                setError(t("profilePage.profileUpdateFailed"));
             } finally {
                 setLoading(false);
             }
@@ -75,7 +77,7 @@ export default function ProfilePage() {
         } else if (isInitialized && !isLoggedIn) {
             setLoading(false);
         }
-    }, [isInitialized, isLoggedIn]);
+    }, [isInitialized, isLoggedIn, t]);
 
     const handleSaveProfile = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -83,7 +85,7 @@ export default function ProfilePage() {
         setSuccess(null);
 
         if (!name.trim()) {
-            setError("First name is required.");
+            setError(t("profilePage.firstNameRequired"));
             return;
         }
 
@@ -113,13 +115,13 @@ export default function ProfilePage() {
 
             if (res.ok) {
                 setUser(data);
-                setSuccess("Profile updated successfully!");
+                setSuccess(t("profilePage.profileUpdatedSuccess"));
             } else {
-                setError(data.message || "Failed to update profile.");
+                setError(data.message || t("profilePage.profileUpdateFailed"));
             }
         } catch (err) {
             console.error("Error updating profile:", err);
-            setError("An error occurred while saving your changes.");
+            setError(t("profilePage.profileUpdateFailed"));
         } finally {
             setSaving(false);
         }
@@ -145,12 +147,12 @@ export default function ProfilePage() {
                 router.push("/");
             } else {
                 const data = await res.json();
-                setError(data.message || "Failed to delete account.");
+                setError(data.message || t("profilePage.profileUpdateFailed"));
                 setShowDeleteModal(false);
             }
         } catch (err) {
             console.error("Error deleting account:", err);
-            setError("An error occurred while deleting your account.");
+            setError(t("profilePage.profileUpdateFailed"));
             setShowDeleteModal(false);
         } finally {
             setDeleting(false);
@@ -167,8 +169,8 @@ export default function ProfilePage() {
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                         </svg>
                     </div>
-                    <h3 className="font-sans text-xl font-bold text-slate-800 uppercase tracking-wider">Loading Profile...</h3>
-                    <p className="font-hand text-[19px] text-slate-600 mt-2">Retrieving your student record...</p>
+                    <h3 className="font-sans text-xl font-bold text-slate-800 uppercase tracking-wider">{t("profilePage.loadingTitle")}</h3>
+                    <p className="font-hand text-[19px] text-slate-600 mt-2">{t("profilePage.loadingSubtitle")}</p>
                 </div>
             </div>
         );
@@ -180,16 +182,16 @@ export default function ProfilePage() {
                 <Navbar />
                 <div className="mt-16 w-full max-w-md bg-[#fdfaf6] border border-slate-400 p-8 rounded-[16px] shadow-xl flex flex-col items-center text-center">
                     <h2 className="text-3xl font-extrabold text-[#2a2d64] tracking-tight uppercase mb-2 font-sans">
-                        Sign In Required
+                        {t("profilePage.signInRequiredTitle")}
                     </h2>
                     <p className="font-hand text-[20px] text-slate-700 leading-relaxed mb-6">
-                        You need to be logged in to access your profile account page.
+                        {t("profilePage.signInRequiredSubtitle")}
                     </p>
                     <Link
                         href="/login"
                         className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-full text-base tracking-wide transition-all shadow-md shadow-blue-600/20 uppercase"
                     >
-                        Go to Login Page
+                        {t("profilePage.goToLogin")}
                     </Link>
                 </div>
             </div>
@@ -211,10 +213,10 @@ export default function ProfilePage() {
                         {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
                     </div>
                     <h1 className="text-4xl md:text-5xl font-extrabold text-[#2a2d64] tracking-tight uppercase font-sans">
-                        Student Profile
+                        {t("profilePage.pageTitle")}
                     </h1>
                     <p className="font-hand text-[22px] text-slate-700 font-medium mt-1">
-                        Manage your account settings and personal details.
+                        {t("profilePage.pageSubtitle")}
                     </p>
                 </div>
 
@@ -223,15 +225,15 @@ export default function ProfilePage() {
                     {/* Role & Status Pill Badges */}
                     <div className="flex flex-wrap items-center justify-between border-b border-slate-300 pb-4 gap-3">
                         <div className="flex items-center gap-3">
-                            <span className="font-hand text-[19px] text-slate-700 font-bold">Account Role:</span>
+                            <span className="font-hand text-[19px] text-slate-700 font-bold">{t("profilePage.accountRoleLabel")}</span>
                             <span className={`px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${user?.role === "admin" ? "bg-purple-100 text-purple-800 border border-purple-300" : "bg-blue-100 text-blue-800 border border-blue-300"}`}>
-                                {user?.role || "User"}
+                                {user?.role === "admin" ? t("profilePage.roleAdmin") : t("profilePage.roleUser")}
                             </span>
                         </div>
                         <div className="flex items-center gap-3">
-                            <span className="font-hand text-[19px] text-slate-700 font-bold">Status:</span>
+                            <span className="font-hand text-[19px] text-slate-700 font-bold">{t("profilePage.statusLabel")}</span>
                             <span className="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-green-100 text-green-800 border border-green-300">
-                                {user?.status || "Active"}
+                                {t("profilePage.statusActive")}
                             </span>
                         </div>
                     </div>
@@ -241,7 +243,7 @@ export default function ProfilePage() {
                             {/* First Name */}
                             <div>
                                 <label className="block text-[18px] font-hand text-slate-800 font-bold mb-1.5">
-                                    First Name:
+                                    {t("profilePage.firstNameLabel")}
                                 </label>
                                 <input
                                     type="text"
@@ -255,13 +257,13 @@ export default function ProfilePage() {
                             {/* Last Name */}
                             <div>
                                 <label className="block text-[18px] font-hand text-slate-800 font-bold mb-1.5">
-                                    Last Name:
+                                    {t("profilePage.lastNameLabel")}
                                 </label>
                                 <input
                                     type="text"
                                     value={lastName}
                                     onChange={(e) => setLastName(e.target.value)}
-                                    placeholder="Optional"
+                                    placeholder={t("profilePage.optionalPlaceholder")}
                                     className="w-full px-4 py-2.5 bg-[#fdfaf6] border border-slate-400 rounded-lg text-slate-800 font-sans focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm"
                                 />
                             </div>
@@ -270,7 +272,7 @@ export default function ProfilePage() {
                         {/* Email (Read Only) */}
                         <div>
                             <label className="block text-[18px] font-hand text-slate-800 font-bold mb-1.5">
-                                Email Address (Read-only):
+                                {t("profilePage.emailReadOnlyLabel")}
                             </label>
                             <input
                                 type="email"
@@ -284,13 +286,13 @@ export default function ProfilePage() {
                             {/* Student ID */}
                             <div>
                                 <label className="block text-[18px] font-hand text-slate-800 font-bold mb-1.5">
-                                    Student ID:
+                                    {t("profilePage.studentIdLabel")}
                                 </label>
                                 <input
                                     type="text"
                                     value={studentId}
                                     onChange={(e) => setStudentId(e.target.value)}
-                                    placeholder="e.g. S1094827"
+                                    placeholder={t("profilePage.studentIdPlaceholder")}
                                     className="w-full px-4 py-2.5 bg-[#fdfaf6] border border-slate-400 rounded-lg text-slate-800 font-sans focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm"
                                 />
                             </div>
@@ -298,13 +300,13 @@ export default function ProfilePage() {
                             {/* Department / Field */}
                             <div>
                                 <label className="block text-[18px] font-hand text-slate-800 font-bold mb-1.5">
-                                    Department / Field of Study:
+                                    {t("profilePage.departmentLabel")}
                                 </label>
                                 <input
                                     type="text"
                                     value={department}
                                     onChange={(e) => setDepartment(e.target.value)}
-                                    placeholder="e.g. Computer Science"
+                                    placeholder={t("profilePage.departmentPlaceholder")}
                                     className="w-full px-4 py-2.5 bg-[#fdfaf6] border border-slate-400 rounded-lg text-slate-800 font-sans focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm"
                                 />
                             </div>
@@ -329,7 +331,7 @@ export default function ProfilePage() {
                                 onClick={() => setShowSignOutModal(true)}
                                 className="bg-white border-2 border-slate-400 hover:bg-slate-100 text-slate-700 font-semibold px-6 py-2.5 rounded-full text-base transition-all shadow-sm active:scale-95 uppercase"
                             >
-                                Sign Out
+                                {t("profilePage.signOutButton")}
                             </button>
 
                             <button
@@ -337,19 +339,19 @@ export default function ProfilePage() {
                                 disabled={saving}
                                 className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-full text-base tracking-wide transition-all shadow-md shadow-blue-600/20 uppercase active:scale-95 disabled:opacity-70"
                             >
-                                {saving ? "Saving Changes..." : "Save Profile"}
+                                {saving ? t("profilePage.savingChangesButton") : t("profilePage.saveProfileButton")}
                             </button>
                         </div>
                     </form>
 
-                    {/* Delete Account Section (No Danger Zone heading) */}
+                    {/* Delete Account Section */}
                     <div className="mt-8 border-t border-slate-300 pt-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                         <div>
                             <h4 className="font-sans font-bold text-slate-800 text-base uppercase tracking-wider">
-                                Delete Account
+                                {t("profilePage.deleteAccountTitle")}
                             </h4>
                             <p className="font-hand text-[17px] text-slate-600">
-                                Permanently delete your user account and personal data.
+                                {t("profilePage.deleteAccountSubtitle")}
                             </p>
                         </div>
                         <button
@@ -357,7 +359,7 @@ export default function ProfilePage() {
                             onClick={() => setShowDeleteModal(true)}
                             className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-300 font-medium px-6 py-2.5 rounded-full text-sm transition-all whitespace-nowrap"
                         >
-                            Delete Account
+                            {t("profilePage.deleteAccountButton")}
                         </button>
                     </div>
                 </div>
@@ -368,17 +370,17 @@ export default function ProfilePage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
                     <div className="bg-[#fdfaf6] border border-slate-400 p-8 rounded-[16px] shadow-2xl max-w-md w-full text-center">
                         <h3 className="text-2xl font-extrabold text-slate-800 uppercase font-sans mb-3">
-                            Confirm Sign Out
+                            {t("profilePage.confirmSignOutTitle")}
                         </h3>
                         <p className="font-hand text-[19px] text-slate-700 mb-6">
-                            Are you sure you want to sign out of your account?
+                            {t("profilePage.confirmSignOutSubtitle")}
                         </p>
                         <div className="flex items-center justify-center gap-4">
                             <button
                                 onClick={() => setShowSignOutModal(false)}
                                 className="px-6 py-2.5 border border-slate-400 text-slate-700 rounded-full font-medium hover:bg-slate-100 transition-colors"
                             >
-                                Cancel
+                                {t("profilePage.cancelButton")}
                             </button>
                             <button
                                 onClick={async () => {
@@ -388,7 +390,7 @@ export default function ProfilePage() {
                                 }}
                                 className="px-6 py-2.5 bg-slate-700 hover:bg-slate-800 text-white rounded-full font-semibold transition-colors uppercase"
                             >
-                                Sign Out
+                                {t("profilePage.signOutButton")}
                             </button>
                         </div>
                     </div>
@@ -400,24 +402,24 @@ export default function ProfilePage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
                     <div className="bg-[#fdfaf6] border border-red-400 p-8 rounded-[16px] shadow-2xl max-w-md w-full text-center">
                         <h3 className="text-2xl font-extrabold text-red-700 uppercase font-sans mb-3">
-                            Confirm Account Deletion
+                            {t("profilePage.confirmDeleteTitle")}
                         </h3>
                         <p className="font-hand text-[19px] text-slate-700 mb-6">
-                            Are you sure you want to permanently delete your account? This action cannot be undone.
+                            {t("profilePage.confirmDeleteSubtitle")}
                         </p>
                         <div className="flex items-center justify-center gap-4">
                             <button
                                 onClick={() => setShowDeleteModal(false)}
                                 className="px-6 py-2.5 border border-slate-400 text-slate-700 rounded-full font-medium hover:bg-slate-100 transition-colors"
                             >
-                                Cancel
+                                {t("profilePage.cancelButton")}
                             </button>
                             <button
                                 onClick={handleDeleteAccount}
                                 disabled={deleting}
                                 className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-full font-semibold transition-colors disabled:opacity-75"
                             >
-                                {deleting ? "Deleting..." : "Yes, Delete Account"}
+                                {deleting ? t("profilePage.deletingButton") : t("profilePage.yesDeleteAccountButton")}
                             </button>
                         </div>
                     </div>
