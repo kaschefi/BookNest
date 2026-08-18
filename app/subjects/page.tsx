@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
 import RoughCardBackground from "@/components/RoughCardBackground";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface IFieldData {
     _id?: string;
@@ -34,9 +35,8 @@ export function NotebookSpiral() {
     );
 }
 
-const PRESET_SUBJECTS: Record<string, { description: string; icon: React.ReactNode }> = {
+const PRESET_SUBJECTS: Record<string, { icon: React.ReactNode }> = {
     mathematics: {
-        description: "From basics of sets, geometry, and calculus to complex algebraic systems. Dive into core formulas.",
         icon: (
             <svg className="w-[80px] h-[80px] text-slate-800" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="25" y="20" width="50" height="60" rx="6" />
@@ -50,7 +50,6 @@ const PRESET_SUBJECTS: Record<string, { description: string; icon: React.ReactNo
         )
     },
     "computer-science": {
-        description: "Explore variables, arrays, structures, Operating Systems, databases, AI, and algorithmic complexity rules.",
         icon: (
             <div className="relative w-[80px] h-[80px] flex justify-center items-center">
                 <Image
@@ -64,7 +63,6 @@ const PRESET_SUBJECTS: Record<string, { description: string; icon: React.ReactNo
         )
     },
     chemistry: {
-        description: "Study mole stoichiometry, organic reactions, periodic trends, thermodynamics, and molecular models.",
         icon: (
             <svg className="w-[80px] h-[80px] text-slate-800" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <ellipse cx="50" cy="25" rx="8" ry="3" />
@@ -78,7 +76,6 @@ const PRESET_SUBJECTS: Record<string, { description: string; icon: React.ReactNo
         )
     },
     physics: {
-        description: "Investigate Newtonian kinematics, thermodynamics, electromagnetism, and classical mechanics.",
         icon: (
             <svg className="w-[80px] h-[80px] text-slate-800" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <ellipse cx="50" cy="50" rx="35" ry="12" transform="rotate(30 50 50)" />
@@ -101,6 +98,7 @@ const DEFAULT_ICON = (
 export default function SubjectsDirectory() {
     const [fields, setFields] = useState<IFieldData[]>([]);
     const [loading, setLoading] = useState(true);
+    const { t } = useLanguage();
 
     useEffect(() => {
         const fetchFields = async () => {
@@ -136,6 +134,20 @@ export default function SubjectsDirectory() {
         fetchFields();
     }, []);
 
+    const fieldNameMap: Record<string, string> = {
+        "mathematics": t("subjectsSection.mathematics"),
+        "computer-science": t("subjectsSection.computerScience").replace("\n", " "),
+        "chemistry": t("subjectsSection.chemistry"),
+        "physics": t("subjectsSection.physics"),
+    };
+
+    const presetDescMap: Record<string, string> = {
+        "mathematics": t("subjects.presetDescriptions.mathematics"),
+        "computer-science": t("subjects.presetDescriptions.computerScience"),
+        "chemistry": t("subjects.presetDescriptions.chemistry"),
+        "physics": t("subjects.presetDescriptions.physics"),
+    };
+
     return (
         <div className="relative min-h-screen flex flex-col items-center overflow-x-hidden pt-4 px-8 pb-12 bg-[#fdfaf6]">
             {/* Lined Notebook Paper Aesthetics */}
@@ -161,22 +173,22 @@ export default function SubjectsDirectory() {
                 {/* Headline Section */}
                 <div className="text-center mb-10">
                     <div className="inline-block relative">
-                        <h1 className="text-4xl md:text-5xl font-extrabold text-[#2a2d64] tracking-tight uppercase">
-                            Study Directory
+                        <h1 className="text-4xl md:text-5xl font-extrabold text-[#2a2d64] tracking-tight uppercase font-sans">
+                            {t("subjects.directoryTitle")}
                         </h1>
                         <div className="absolute -bottom-3 left-0 w-[110%] h-6 -ml-[5%] opacity-90 mix-blend-multiply">
                             <Image src="/title_underline.png" alt="Underline" fill className="object-contain contrast-[1.1] brightness-[1.1]" />
                         </div>
                     </div>
                     <p className="font-hand text-[22px] text-slate-700 font-medium mt-4">
-                        Select a field of study below to explore all lessons, lecture sheets, and notes.
+                        {t("subjects.directorySubtitle")}
                     </p>
                 </div>
 
                 {/* Subject Cards Grid */}
                 {loading ? (
                     <div className="text-center py-16 font-hand text-2xl text-slate-600 font-bold">
-                        Loading study fields...
+                        {t("subjects.loadingFields")}
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-[950px] mt-4">
@@ -184,7 +196,8 @@ export default function SubjectsDirectory() {
                             const slug = field.slug || field.name.toLowerCase().replace(/\s+/g, "-");
                             const preset = PRESET_SUBJECTS[slug];
                             const icon = preset?.icon || DEFAULT_ICON;
-                            const description = field.description || preset?.description || `Explore lessons, lecture sheets, and study materials in ${field.name}.`;
+                            const displayName = fieldNameMap[slug] || field.name;
+                            const description = presetDescMap[slug] || field.description || t("subjects.defaultDescription");
 
                             return (
                                 <Link
@@ -202,7 +215,7 @@ export default function SubjectsDirectory() {
                                             {icon}
                                         </div>
                                         <h3 className="font-sans text-2xl font-bold text-slate-800 leading-tight">
-                                            {field.name}
+                                            {displayName}
                                         </h3>
                                         <p className="font-hand text-lg text-slate-600 mt-2 max-w-[340px] leading-relaxed">
                                             {description}
@@ -210,8 +223,8 @@ export default function SubjectsDirectory() {
                                     </div>
 
                                     <div className="flex items-center gap-1.5 text-slate-600 font-hand text-xl font-bold group-hover/card:text-blue-600 transition-colors z-10 mt-4 mb-2">
-                                        Explore Lessons
-                                        <svg className="w-5 h-5 transition-transform duration-300 group-hover/card:translate-x-1" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                                        {t("subjects.exploreLessons")}
+                                        <svg className="w-5 h-5 transition-transform duration-300 group-hover/card:translate-x-1 rtl:group-hover/card:-translate-x-1 rtl:rotate-180" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                                             <path d="M5 12h14m-7-7 7 7-7 7" />
                                         </svg>
                                     </div>

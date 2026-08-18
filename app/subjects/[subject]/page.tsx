@@ -6,6 +6,7 @@ import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
 import RoughCardBackground from "@/components/RoughCardBackground";
 import { useSubjectLessons, IResource } from "@/hooks/useSubjectLessons";
+import { useLanguage } from "@/context/LanguageContext";
 
 // Realistic binder coils component for notebook look
 export function NotebookSpiral() {
@@ -29,6 +30,7 @@ export function NotebookSpiral() {
 }
 
 export default function SubjectLessonsPage() {
+    const { t, isRTL } = useLanguage();
     const {
         subjectSlug,
         fieldName,
@@ -53,6 +55,15 @@ export default function SubjectLessonsPage() {
         handleVote,
         activeStatic,
     } = useSubjectLessons();
+
+    // Map title if preset subject
+    const subjectTitleMap: Record<string, string> = {
+        "mathematics": t("subjectsSection.mathematics"),
+        "computer-science": t("subjectsSection.computerScience").replace("\n", " "),
+        "chemistry": t("subjectsSection.chemistry"),
+        "physics": t("subjectsSection.physics"),
+    };
+    const displayName = subjectTitleMap[subjectSlug] || fieldName || activeStatic.name;
 
     // Tabbed resources
     const midterms = resources.filter((r) => r.type === "midterm");
@@ -281,7 +292,7 @@ export default function SubjectLessonsPage() {
                 <div className="text-center mb-6">
                     <div className="inline-block relative">
                         <h1 className="text-4xl md:text-5xl font-extrabold text-[#2a2d64] tracking-tight uppercase select-none font-sans">
-                            {activeStatic.name}
+                            {displayName}
                         </h1>
                         <div className="absolute -bottom-3 left-0 w-[110%] h-6 -ml-[5%] opacity-90 mix-blend-multiply">
                             <Image src="/title_underline.png" alt="Underline" fill className="object-contain contrast-[1.1] brightness-[1.1]" />
@@ -296,14 +307,14 @@ export default function SubjectLessonsPage() {
                 <div className="relative w-full max-w-[550px] mb-8 mt-2 px-4 md:px-0">
                     <div className="relative flex items-center bg-[#fdfaf6] border border-slate-400 rounded-lg shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 overflow-hidden transition-all">
                         {/* Search Icon */}
-                        <div className="pl-4 pr-2 text-slate-500 flex justify-center items-center pointer-events-none">
+                        <div className="pl-4 pr-2 rtl:pr-4 rtl:pl-2 text-slate-500 flex justify-center items-center pointer-events-none">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </div>
                         <input
                             type="text"
-                            placeholder="Search for lessons..."
+                            placeholder={t("subjects.searchPlaceholder")}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pr-4 py-2.5 bg-transparent border-0 text-slate-800 font-sans focus:outline-none placeholder-slate-400"
@@ -333,12 +344,12 @@ export default function SubjectLessonsPage() {
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                     </svg>
                                 </div>
-                                <p className="font-hand text-[20px] text-slate-600">Turning the notebook pages...</p>
+                                <p className="font-hand text-[20px] text-slate-600">{t("subjects.loadingLessons")}</p>
                             </div>
                         ) : filteredLessons.length === 0 ? (
                             <div className="flex flex-col items-center justify-center flex-1 py-12 text-center">
-                                <p className="font-hand text-[23px] text-slate-600 font-bold">No matching lessons found.</p>
-                                <p className="font-hand text-lg text-slate-500 mt-1 max-w-[280px]">Double check your spelling or search for other lecture terms.</p>
+                                <p className="font-hand text-[23px] text-slate-600 font-bold">{t("subjects.noLessonsFound")}</p>
+                                <p className="font-hand text-lg text-slate-500 mt-1 max-w-[280px]">{t("subjects.noLessonsHint")}</p>
                             </div>
                         ) : (
                             <div className="flex flex-col w-full divide-y divide-slate-200 z-10">
@@ -366,7 +377,7 @@ export default function SubjectLessonsPage() {
                                         </div>
 
                                         {/* Right Chevron arrow */}
-                                        <div className="text-slate-400 group-hover/item:text-blue-600 group-hover/item:translate-x-1.5 transition-all duration-200 pr-1 shrink-0">
+                                        <div className="text-slate-400 group-hover/item:text-blue-600 group-hover/item:translate-x-1.5 rtl:group-hover/item:-translate-x-1.5 rtl:rotate-180 transition-all duration-200 pr-1 shrink-0">
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                                             </svg>
@@ -389,7 +400,7 @@ export default function SubjectLessonsPage() {
                                 disabled={currentPage === 1}
                                 className={`w-8 h-8 rounded-full border border-slate-400 flex items-center justify-center font-hand text-lg font-bold text-slate-700 transition-all hover:scale-105 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${currentPage > 1 ? 'hover:border-blue-600 hover:text-blue-600 cursor-pointer' : ''}`}
                             >
-                                ◄
+                                {isRTL ? "►" : "◄"}
                             </button>
 
                             {/* Number buttons */}
@@ -418,13 +429,16 @@ export default function SubjectLessonsPage() {
                                 disabled={currentPage === totalPages}
                                 className={`w-8 h-8 rounded-full border border-slate-400 flex items-center justify-center font-hand text-lg font-bold text-slate-700 transition-all hover:scale-105 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${currentPage < totalPages ? 'hover:border-blue-600 hover:text-blue-600 cursor-pointer' : ''}`}
                             >
-                                ►
+                                {isRTL ? "◄" : "►"}
                             </button>
                         </div>
                         
                         {/* Summary caption */}
                         <p className="font-hand text-[17px] text-slate-500 font-semibold italic -mt-1 select-none">
-                            Showing {startIndex + 1} - {Math.min(startIndex + lessonsPerPage, filteredLessons.length)} of {filteredLessons.length} lessons
+                            {t("subjects.showingLessons")
+                                .replace("{start}", String(startIndex + 1))
+                                .replace("{end}", String(Math.min(startIndex + lessonsPerPage, filteredLessons.length)))
+                                .replace("{total}", String(filteredLessons.length))}
                         </p>
                     </div>
                 )}
@@ -449,7 +463,7 @@ export default function SubjectLessonsPage() {
                         {/* Top corner close button */}
                         <button
                             onClick={() => setSelectedLesson(null)}
-                            className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full border border-slate-400 hover:border-blue-600 hover:text-blue-600 bg-[#fdfaf6] flex items-center justify-center font-bold text-slate-600 transition-colors shadow-sm active:scale-95"
+                            className="absolute top-4 right-4 rtl:right-auto rtl:left-4 z-20 w-8 h-8 rounded-full border border-slate-400 hover:border-blue-600 hover:text-blue-600 bg-[#fdfaf6] flex items-center justify-center font-bold text-slate-600 transition-colors shadow-sm active:scale-95"
                             aria-label="Close modal"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
@@ -459,10 +473,10 @@ export default function SubjectLessonsPage() {
 
                         <div className="relative z-10 flex flex-col flex-1">
                             {/* Header */}
-                            <div className="pr-8 mb-4">
+                            <div className="pr-8 rtl:pr-0 rtl:pl-8 mb-4">
                                 <div className="flex items-center gap-2 mb-1">
                                     <span className="font-hand text-[18px] text-blue-600 font-bold border border-blue-400 bg-blue-50 px-2 py-0.5 rounded transform -rotate-1 shadow-sm">
-                                        Lesson {selectedLesson.index}
+                                        {t("subjects.lessonBadge")} {selectedLesson.index}
                                     </span>
                                 </div>
                                 <h2 className="text-2xl md:text-3xl font-extrabold text-[#2a2d64] leading-snug">
@@ -477,21 +491,21 @@ export default function SubjectLessonsPage() {
                             <div className="flex border border-slate-400 rounded-lg overflow-hidden bg-[#fdfaf6] shadow-sm mb-5 text-[17px] font-hand font-bold">
                                 <button
                                     onClick={() => setActiveTab("midterm")}
-                                    className={`relative flex-1 py-2 text-center transition-all overflow-hidden border-r border-slate-400 last:border-0 ${activeTab === "midterm" ? "text-blue-900 bg-blue-50/50" : "hover:bg-slate-50/50 text-slate-500"}`}
+                                    className={`relative flex-1 py-2 text-center transition-all overflow-hidden border-r border-slate-400 rtl:border-r-0 rtl:border-l last:border-0 ${activeTab === "midterm" ? "text-blue-900 bg-blue-50/50" : "hover:bg-slate-50/50 text-slate-500"}`}
                                 >
-                                    <span>Midterms ({midterms.length})</span>
+                                    <span>{t("subjects.tabMidterms")} ({midterms.length})</span>
                                 </button>
                                 <button
                                     onClick={() => setActiveTab("final")}
-                                    className={`relative flex-1 py-2 text-center transition-all overflow-hidden border-r border-slate-400 last:border-0 ${activeTab === "final" ? "text-blue-900 bg-blue-50/50" : "hover:bg-slate-50/50 text-slate-500"}`}
+                                    className={`relative flex-1 py-2 text-center transition-all overflow-hidden border-r border-slate-400 rtl:border-r-0 rtl:border-l last:border-0 ${activeTab === "final" ? "text-blue-900 bg-blue-50/50" : "hover:bg-slate-50/50 text-slate-500"}`}
                                 >
-                                    <span>Finals ({finals.length})</span>
+                                    <span>{t("subjects.tabFinals")} ({finals.length})</span>
                                 </button>
                                 <button
                                     onClick={() => setActiveTab("pamphlet")}
-                                    className={`relative flex-1 py-2 text-center transition-all overflow-hidden border-r border-slate-400 last:border-0 ${activeTab === "pamphlet" ? "text-blue-900 bg-blue-50/50" : "hover:bg-slate-50/50 text-slate-500"}`}
+                                    className={`relative flex-1 py-2 text-center transition-all overflow-hidden border-r border-slate-400 rtl:border-r-0 rtl:border-l last:border-0 ${activeTab === "pamphlet" ? "text-blue-900 bg-blue-50/50" : "hover:bg-slate-50/50 text-slate-500"}`}
                                 >
-                                    <span>Extra ({pamphlets.length})</span>
+                                    <span>{t("subjects.tabExtra")} ({pamphlets.length})</span>
                                 </button>
                             </div>
 
@@ -504,7 +518,7 @@ export default function SubjectLessonsPage() {
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3m0 0l3 3m-3-3v12" />
                                             </svg>
                                         </div>
-                                        <p className="font-hand text-[19px] text-slate-600">Fetching lecture sheets from the nest...</p>
+                                        <p className="font-hand text-[19px] text-slate-600">{t("subjects.fetchingSheets")}</p>
                                     </div>
                                 ) : currentTabResources.length === 0 ? (
                                     /* Empty State for category */
@@ -516,14 +530,14 @@ export default function SubjectLessonsPage() {
                                                 <path d="M 30 35 L 35 35 M 30 50 L 35 50" />
                                             </svg>
                                         </div>
-                                        <p className="font-hand text-[19px] text-slate-600 font-bold">No study sheets uploaded yet.</p>
-                                        <p className="font-hand text-base text-slate-500 mt-0.5">Be the first to share notes for this topic!</p>
+                                        <p className="font-hand text-[19px] text-slate-600 font-bold">{t("subjects.noSheetsUploaded")}</p>
+                                        <p className="font-hand text-base text-slate-500 mt-0.5">{t("subjects.beFirstToShare")}</p>
                                         
                                         <Link
                                             href={`/notes?field=${encodeURIComponent(fieldName)}&lesson=${encodeURIComponent(selectedLesson.name)}`}
                                             className="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full text-sm font-medium transition-colors shadow-md shadow-blue-600/10 hover:scale-105 active:scale-95 text-center uppercase"
                                         >
-                                            Contribute notes
+                                            {t("subjects.contributeNotesButton")}
                                         </Link>
                                     </div>
                                 ) : (
@@ -535,14 +549,14 @@ export default function SubjectLessonsPage() {
                                                 className="flex items-center justify-between p-3.5 bg-white border border-slate-200 rounded-lg hover:border-slate-400 transition-colors shadow-sm group/row"
                                             >
                                                 {/* Left Details */}
-                                                <div className="flex flex-col flex-1 min-w-0 pr-3">
+                                                <div className="flex flex-col flex-1 min-w-0 pr-3 rtl:pr-0 rtl:pl-3">
                                                     <h5 className="font-sans text-base font-bold text-slate-800 leading-snug truncate group-hover/row:text-blue-700 transition-colors" title={res.title}>
                                                         {res.title}
                                                     </h5>
                                                     <div className="flex flex-wrap items-center gap-x-2 text-[14px] text-slate-500 font-hand font-medium mt-0.5">
-                                                        <span className="capitalize">{res.semester} {res.year}</span>
+                                                        <span className="capitalize">{t(`notesUpload.semesters.${res.semester}`)} {res.year}</span>
                                                         <span>•</span>
-                                                        <span>{res.downloads} download{res.downloads !== 1 ? "s" : ""}</span>
+                                                        <span>{res.downloads} {res.downloads !== 1 ? t("subjects.downloadsCountPlural") : t("subjects.downloadsCount")}</span>
                                                         {res.size && (
                                                             <>
                                                                 <span>•</span>
@@ -584,7 +598,7 @@ export default function SubjectLessonsPage() {
                                                     <button
                                                         onClick={() => handleDownload(res)}
                                                         className="p-2 border border-slate-300 rounded-full hover:border-blue-600 hover:text-blue-600 text-slate-500 hover:bg-blue-50/50 transition-all active:scale-90"
-                                                        title="Download Study Sheet"
+                                                        title={t("subjects.downloadTooltip")}
                                                     >
                                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />

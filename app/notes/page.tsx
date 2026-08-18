@@ -7,6 +7,7 @@ import rough from "roughjs";
 import Navbar from "@/components/layout/Navbar";
 import { useUploadForm } from "@/hooks/useUploadForm";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
+import { useLanguage } from "@/context/LanguageContext";
 
 function RoughTabBackground() {
     const svgRef = useRef<SVGSVGElement>(null);
@@ -57,6 +58,7 @@ function RoughTabBackground() {
 
 export default function NotesUploadPage() {
     const { isLoggedIn, status } = useAuthStatus();
+    const { t } = useLanguage();
     const {
         title,
         setTitle,
@@ -110,8 +112,8 @@ export default function NotesUploadPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                         </svg>
                     </div>
-                    <h3 className="font-sans text-xl font-bold text-slate-800 uppercase tracking-wider">Loading Nest...</h3>
-                    <p className="font-hand text-[19px] text-slate-600 mt-2">Checking your study agreement...</p>
+                    <h3 className="font-sans text-xl font-bold text-slate-800 uppercase tracking-wider">{t("notesUpload.loadingTitle")}</h3>
+                    <p className="font-hand text-[19px] text-slate-600 mt-2">{t("notesUpload.loadingSubtitle")}</p>
                 </div>
             </div>
         );
@@ -126,7 +128,7 @@ export default function NotesUploadPage() {
                     <div className="relative bg-[#fdfaf6] border border-slate-400 p-8 rounded-[16px] shadow-2xl max-w-md w-full mx-auto text-left overflow-hidden flex flex-col">
                         {/* Torn tape header effect */}
                         <div className="absolute top-0 left-1/2 transform -translate-x-1/2 bg-[#5b73b5]/90 text-white text-xs font-bold px-6 py-1.5 shadow-sm rounded-b-md select-none font-sans uppercase tracking-wider">
-                            ATTENTION STUDENT
+                            {t("notesUpload.attentionTitle")}
                         </div>
 
                         {/* Card lines background */}
@@ -145,11 +147,11 @@ export default function NotesUploadPage() {
                             </div>
 
                             <h2 className="text-3xl font-extrabold text-[#2a2d64] tracking-tight uppercase mb-2">
-                                Login Required
+                                {t("notesUpload.loginRequiredTitle")}
                             </h2>
 
                             <p className="font-hand text-[22px] text-slate-700 leading-relaxed mb-6">
-                                To contribute your knowledge to the nest, please sign in first.
+                                {t("notesUpload.loginRequiredSubtitle")}
                             </p>
 
                             {/* CTA Button */}
@@ -158,13 +160,13 @@ export default function NotesUploadPage() {
                                     href="/login"
                                     className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-full text-base tracking-wide transition-all shadow-md shadow-blue-600/20 active:scale-95 uppercase text-center block w-full"
                                 >
-                                    Go to Login Page
+                                    {t("notesUpload.goToLogin")}
                                 </Link>
                                 <Link
                                     href="/"
                                     className="text-slate-500 hover:text-slate-800 text-sm font-semibold underline underline-offset-4 font-hand text-[17px] hover:scale-105 transition-transform text-center block"
                                 >
-                                    Return to Homepage
+                                    {t("notesUpload.returnHome")}
                                 </Link>
                             </div>
                         </div>
@@ -314,12 +316,12 @@ export default function NotesUploadPage() {
 
                     {/* Headline */}
                     <h1 className="text-4xl md:text-5xl font-extrabold text-[#2a2d64] tracking-tight text-center select-none uppercase font-sans">
-                        FILE UPLOAD
+                        {t("notesUpload.pageTitle")}
                     </h1>
 
                     {/* Handwriting Subtitle */}
                     <p className="font-hand text-[22px] text-slate-700 font-medium text-center mt-1 mb-6 max-w-[450px]">
-                        Share your notes with the BookNest community.
+                        {t("notesUpload.pageSubtitle")}
                     </p>
 
                     {/* Main Container Card */}
@@ -328,18 +330,18 @@ export default function NotesUploadPage() {
                             {/* Document Title Input */}
                             <div>
                                 <label className="block text-[18px] font-hand text-slate-800 font-bold mb-1.5">
-                                    Document Title:
+                                    {t("notesUpload.documentTitleLabel")}
                                 </label>
                                 <div className="relative">
                                     <input
                                         type="text"
-                                        placeholder="Enter the title of your file (e.g., Intro to Linear Algebra)"
+                                        placeholder={t("notesUpload.documentTitlePlaceholder")}
                                         value={title}
                                         onChange={(e) => setTitle(e.target.value)}
                                         className="w-full pl-4 pr-10 py-2.5 bg-[#fdfaf6] border border-slate-400 rounded-lg text-slate-800 font-sans focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm"
                                         required
                                     />
-                                    <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-blue-500/80">
+                                    <div className="absolute inset-y-0 right-0 rtl:right-auto rtl:left-0 pr-3.5 rtl:pr-0 rtl:pl-3.5 flex items-center pointer-events-none text-blue-500/80">
                                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                         </svg>
@@ -350,12 +352,12 @@ export default function NotesUploadPage() {
                             {/* Field of Study Input (Autocomplete) */}
                             <div>
                                 <label className="block text-[18px] font-hand text-slate-800 font-bold mb-1.5">
-                                    Field of Study:
+                                    {t("notesUpload.fieldOfStudyLabel")}
                                 </label>
                                 <div className="relative">
                                     <input
                                         type="text"
-                                        placeholder="Enter your Field of Study (e.g., Physics, Computer Science)"
+                                        placeholder={t("notesUpload.fieldOfStudyPlaceholder")}
                                         value={fieldQuery}
                                         onChange={(e) => {
                                             setFieldQuery(e.target.value);
@@ -385,12 +387,12 @@ export default function NotesUploadPage() {
                             {/* Lesson / Topic Input (Autocomplete) */}
                             <div>
                                 <label className="block text-[18px] font-hand text-slate-800 font-bold mb-1.5">
-                                    Lesson / Topic:
+                                    {t("notesUpload.lessonTopicLabel")}
                                 </label>
                                 <div className="relative">
                                     <input
                                         type="text"
-                                        placeholder="Select Lesson (e.g., Week 5 - Thermodynamics)"
+                                        placeholder={t("notesUpload.lessonTopicPlaceholder")}
                                         value={lessonQuery}
                                         onChange={(e) => {
                                             setLessonQuery(e.target.value);
@@ -398,10 +400,10 @@ export default function NotesUploadPage() {
                                         }}
                                         onFocus={() => setLessonDropdownOpen(true)}
                                         onBlur={handleLessonBlur}
-                                        className="w-full pl-4 pr-10 py-2.5 bg-[#fdfaf6] border border-slate-400 rounded-lg text-slate-800 font-sans focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all pr-10 shadow-sm"
+                                        className="w-full pl-4 pr-10 py-2.5 bg-[#fdfaf6] border border-slate-400 rounded-lg text-slate-800 font-sans focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm"
                                         required
                                     />
-                                    <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-500/80">
+                                    <div className="absolute inset-y-0 right-0 rtl:right-auto rtl:left-0 pr-3.5 rtl:pr-0 rtl:pl-3.5 flex items-center pointer-events-none text-slate-500/80">
                                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
                                         </svg>
@@ -426,7 +428,7 @@ export default function NotesUploadPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-[18px] font-hand text-slate-800 font-bold mb-1.5">
-                                        Semester:
+                                        {t("notesUpload.semesterLabel")}
                                     </label>
                                     <select
                                         value={semester}
@@ -434,8 +436,8 @@ export default function NotesUploadPage() {
                                         className="w-full px-4 py-2.5 bg-[#fdfaf6] border border-slate-400 rounded-lg text-slate-800 font-sans focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm capitalize"
                                     >
                                         {SEMESTERS.map((s) => (
-                                            <option key={s} value={s} className="capitalize">
-                                                {s.charAt(0).toUpperCase() + s.slice(1)}
+                                            <option key={s} value={s}>
+                                                {t(`notesUpload.semesters.${s}`)}
                                             </option>
                                         ))}
                                     </select>
@@ -443,13 +445,13 @@ export default function NotesUploadPage() {
 
                                 <div>
                                     <label className="block text-[18px] font-hand text-slate-800 font-bold mb-1.5">
-                                        Year:
+                                        {t("notesUpload.yearLabel")}
                                     </label>
                                     <input
                                         type="number"
                                         min="1900"
                                         max="2099"
-                                        placeholder="e.g. 2024"
+                                        placeholder={t("notesUpload.yearPlaceholder")}
                                         value={year || ""}
                                         onChange={(e) => setYear(e.target.value ? Number(e.target.value) : 0)}
                                         className="w-full px-4 py-2.5 bg-[#fdfaf6] border border-slate-400 rounded-lg text-slate-800 font-sans focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm"
@@ -461,32 +463,32 @@ export default function NotesUploadPage() {
                             {/* Type Tabs Selection */}
                             <div>
                                 <label className="block text-[18px] font-hand text-slate-800 font-bold mb-1.5">
-                                    Type:
+                                    {t("notesUpload.typeLabel")}
                                 </label>
                                 <div className="flex border border-slate-400 rounded-lg overflow-hidden bg-[#fdfaf6] shadow-sm">
                                     <button
                                         type="button"
                                         onClick={() => setResourceType("midterm")}
-                                        className={`relative flex-1 py-2.5 text-center text-[18px] font-hand font-bold transition-all overflow-hidden border-r border-slate-400 last:border-0 ${resourceType === "midterm" ? "text-blue-900" : "hover:bg-slate-50/50 text-slate-500"}`}
+                                        className={`relative flex-1 py-2.5 text-center text-[18px] font-hand font-bold transition-all overflow-hidden border-r border-slate-400 rtl:border-r-0 rtl:border-l last:border-0 ${resourceType === "midterm" ? "text-blue-900" : "hover:bg-slate-50/50 text-slate-500"}`}
                                     >
                                         {resourceType === "midterm" && <RoughTabBackground />}
-                                        <span className="relative z-10">Midterm</span>
+                                        <span className="relative z-10">{t("notesUpload.midterm")}</span>
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setResourceType("final")}
-                                        className={`relative flex-1 py-2.5 text-center text-[18px] font-hand font-bold transition-all overflow-hidden border-r border-slate-400 last:border-0 ${resourceType === "final" ? "text-blue-900" : "hover:bg-slate-50/50 text-slate-500"}`}
+                                        className={`relative flex-1 py-2.5 text-center text-[18px] font-hand font-bold transition-all overflow-hidden border-r border-slate-400 rtl:border-r-0 rtl:border-l last:border-0 ${resourceType === "final" ? "text-blue-900" : "hover:bg-slate-50/50 text-slate-500"}`}
                                     >
                                         {resourceType === "final" && <RoughTabBackground />}
-                                        <span className="relative z-10">Final</span>
+                                        <span className="relative z-10">{t("notesUpload.final")}</span>
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setResourceType("pamphlet")}
-                                        className={`relative flex-1 py-2.5 text-center text-[18px] font-hand font-bold transition-all overflow-hidden border-r border-slate-400 last:border-0 ${resourceType === "pamphlet" ? "text-blue-900" : "hover:bg-slate-50/50 text-slate-500"}`}
+                                        className={`relative flex-1 py-2.5 text-center text-[18px] font-hand font-bold transition-all overflow-hidden border-r border-slate-400 rtl:border-r-0 rtl:border-l last:border-0 ${resourceType === "pamphlet" ? "text-blue-900" : "hover:bg-slate-50/50 text-slate-500"}`}
                                     >
                                         {resourceType === "pamphlet" && <RoughTabBackground />}
-                                        <span className="relative z-10">Extra</span>
+                                        <span className="relative z-10">{t("notesUpload.extra")}</span>
                                     </button>
                                 </div>
                             </div>
@@ -494,7 +496,7 @@ export default function NotesUploadPage() {
                             {/* File Upload Drag & Drop Area */}
                             <div>
                                 <label className="block text-[18px] font-hand text-slate-800 font-bold mb-1.5">
-                                    File to Upload:
+                                    {t("notesUpload.fileLabel")}
                                 </label>
                                 <div
                                     onDragOver={handleDragOver}
@@ -514,10 +516,10 @@ export default function NotesUploadPage() {
                                     <p className="font-hand text-[19px] text-slate-700 font-medium text-center max-w-[340px]">
                                         {file ? (
                                             <span className="text-blue-600 font-bold bg-blue-50/80 px-2 py-1 rounded border border-blue-200 inline-block transform -rotate-1 shadow-sm">
-                                                Selected: {file.name} ({(file.size / 1024).toFixed(1)} KB)
+                                                {t("notesUpload.fileSelected")}: {file.name} ({(file.size / 1024).toFixed(1)} KB)
                                             </span>
                                         ) : (
-                                            "Click to browse or drag & drop (PDF, DOCX, TXT)"
+                                            t("notesUpload.fileDropPrompt")
                                         )}
                                     </p>
                                 </div>
@@ -542,14 +544,14 @@ export default function NotesUploadPage() {
                                     disabled={uploading}
                                     className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-12 py-3 rounded-full text-base tracking-wide transition-all shadow-md shadow-blue-600/20 active:scale-95 disabled:opacity-75 disabled:cursor-not-allowed uppercase"
                                 >
-                                    {uploading ? "Uploading file..." : "Upload File"}
+                                    {uploading ? t("notesUpload.uploadingButton") : t("notesUpload.uploadButton")}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={handleCancel}
                                     className="text-slate-500 hover:text-slate-800 text-sm font-semibold underline underline-offset-4 font-hand text-[17px] hover:scale-105 transition-transform"
                                 >
-                                    Cancel
+                                    {t("notesUpload.cancelButton")}
                                 </button>
                             </div>
                         </form>
