@@ -93,7 +93,7 @@ export default function SubjectLessonsPage() {
             <main className="relative flex-1 flex flex-col items-center mt-6 w-full max-w-[1400px] pl-6 md:pl-16">
                 
                 {/* ================= MARGIN DOODLES (LEFT SIDE) ================= */}
-                <div className="absolute inset-y-0 left-0 w-[240px] pointer-events-none hidden min-[1250px]:block">
+                <div dir="ltr" className="absolute inset-y-0 left-0 w-[240px] pointer-events-none hidden min-[1250px]:block">
                     {subjectSlug === "mathematics" && (
                         <>
                             {/* Laptop */}
@@ -113,7 +113,7 @@ export default function SubjectLessonsPage() {
                                 <Image src="/Molecular_Model.png" alt="Molecule structure" fill className="object-contain contrast-[1.1] brightness-[1.1]" />
                             </div>
                             {/* Math formulas */}
-                            <div className="absolute top-[70%] left-[15%] font-hand text-[26px] text-slate-800/90 -rotate-6">
+                            <div className="absolute top-[70%] left-[15%] font-hand text-[26px] text-slate-800/90 -rotate-6" dir="ltr">
                                 F = ma
                             </div>
                             {/* Star */}
@@ -145,7 +145,7 @@ export default function SubjectLessonsPage() {
                             <div className="absolute top-[56%] left-[10%] w-[120px] h-[120px] mix-blend-multiply">
                                 <Image src="/Flask.png" alt="Science Beaker" fill className="object-contain contrast-[1.1] brightness-[1.1]" />
                             </div>
-                            <div className="absolute top-[75%] left-[20%] font-hand text-[22px] text-slate-800 -rotate-3">
+                            <div className="absolute top-[75%] left-[20%] font-hand text-[22px] text-slate-800 -rotate-3" dir="ltr">
                                 binary_search()
                             </div>
                         </>
@@ -160,7 +160,7 @@ export default function SubjectLessonsPage() {
                             <div className="absolute top-[36%] left-[15%] w-[120px] h-[120px] mix-blend-multiply">
                                 <Image src="/Molecular_Model.png" alt="Molecule fallback" fill className="object-contain contrast-[1.1] brightness-[1.1]" />
                             </div>
-                            <div className="absolute top-[68%] left-[20%] font-hand text-[24px] text-slate-800 -rotate-6">
+                            <div className="absolute top-[68%] left-[20%] font-hand text-[24px] text-slate-800 -rotate-6" dir="ltr">
                                 H₂O + CO₂ → C₆H₁₂O₆
                             </div>
                         </>
@@ -168,7 +168,7 @@ export default function SubjectLessonsPage() {
                 </div>
 
                 {/* ================= MARGIN DOODLES (RIGHT SIDE) ================= */}
-                <div className="absolute inset-y-0 right-0 w-[240px] pointer-events-none hidden min-[1250px]:block">
+                <div dir="ltr" className="absolute inset-y-0 right-0 w-[240px] pointer-events-none hidden min-[1250px]:block">
                     {subjectSlug === "mathematics" && (
                         <>
                             {/* Pythagorean Right Triangle */}

@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export default function HeroDoodles() {
     return (
-        <div className="absolute inset-0 pointer-events-none overflow-visible w-full h-full hidden min-[1300px]:block">
+        <div dir="ltr" className="absolute inset-0 pointer-events-none overflow-visible w-full h-full hidden min-[1300px]:block">
 
             {/* Top Center Atom */}
             <div className="absolute top-[0%] left-1/2 transform -translate-x-1/2 text-slate-800">
@@ -54,7 +54,7 @@ export default function HeroDoodles() {
                     <path d="M12 2v3m0 14v3m10-10h-3M5 12H2m15.657-7.657l-2.121 2.121M8.464 17.536l-2.121 2.121m11.314 0l-2.121-2.121M8.464 6.464L6.343 4.343" />
                 </svg>
             </div>
-            <div className="absolute top-[50%] left-[6%] transform -rotate-6 font-hand text-4xl text-slate-800">
+            <div className="absolute top-[50%] left-[6%] transform -rotate-6 font-hand text-4xl text-slate-800" dir="ltr">
                 E = mc<sup className="text-xl">2</sup>
             </div>
 
@@ -74,7 +74,7 @@ export default function HeroDoodles() {
                 <Image src="/Star.png" alt="Star" fill className="object-contain contrast-[1.1] brightness-[1.1]" />
             </div>
 
-            <div className="absolute top-[0%] right-[18%] font-hand text-2xl text-slate-800 transform rotate-2 flex items-center gap-2">
+            <div className="absolute top-[0%] right-[18%] font-hand text-2xl text-slate-800 transform rotate-2 flex items-center gap-2" dir="ltr">
                 <span>X =</span>
                 <div className="flex flex-col items-center">
                     <span className="border-b border-slate-800 px-2">-b ± √<span className="border-t border-slate-800">b<sup className="text-sm">2</sup> - 4ac</span></span>

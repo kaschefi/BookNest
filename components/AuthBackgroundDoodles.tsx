@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function AuthBackgroundDoodles() {
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-visible w-full h-full hidden lg:block">
+    <div dir="ltr" className="absolute inset-0 pointer-events-none overflow-visible w-full h-full hidden lg:block">
       {/* Top Left Binary Text in Circle */}
       <div className="absolute top-[5%] left-[22%] transform rotate-3 scale-110">
         <div className="relative bg-purple-50/40 rounded-full border border-purple-300/60 p-4 px-5 font-hand text-purple-600 text-lg leading-tight shadow-sm backdrop-blur-sm flex items-center justify-center">
@@ -24,7 +24,7 @@ export default function AuthBackgroundDoodles() {
       </div>
 
       {/* Pythagoras Triangle */}
-      <div className="absolute bottom-[30%] left-[8%] transform rotate-2 flex flex-col items-center scale-150">
+      <div className="absolute bottom-[30%] left-[8%] transform rotate-2 flex flex-col items-center scale-150" dir="ltr">
         <div className="relative">
           <svg width="100" height="80" viewBox="0 0 100 80" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-800">
             <path d="M10 70 L90 70 L10 10 Z" />
@@ -55,7 +55,7 @@ export default function AuthBackgroundDoodles() {
       {/* RIGHT SIDE DOODLES */}
 
       {/* Quad Formula */}
-      <div className="absolute top-[5%] right-[17%] font-hand text-2xl text-slate-800 transform rotate-2 flex items-center gap-2 scale-125">
+      <div className="absolute top-[5%] right-[17%] font-hand text-2xl text-slate-800 transform rotate-2 flex items-center gap-2 scale-125" dir="ltr">
         <span>X =</span>
         <div className="flex flex-col items-center">
           <span className="border-b border-slate-800 px-2">-b ± √<span className="border-t border-slate-800">b<sup className="text-sm">2</sup> - 4ac</span></span>

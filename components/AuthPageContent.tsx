@@ -8,6 +8,7 @@ import AuthBackgroundDoodles from "./AuthBackgroundDoodles";
 import AuthSocialLogins from "./AuthSocialLogins";
 import { useAnimatedPen } from "../hooks/useAnimatedPen";
 import { useAuthForm } from "../hooks/useAuthForm";
+import { useLanguage } from "../context/LanguageContext";
 
 function AuthPageContentInner() {
   const pathname = usePathname();
@@ -49,6 +50,8 @@ function AuthPageContentInner() {
     handleSubmit
   } = useAuthForm(isLogin);
 
+  const { t, isRTL } = useLanguage();
+
   const onSubmit = (e: React.FormEvent) => {
     handleSubmit(
       e,
@@ -81,13 +84,13 @@ function AuthPageContentInner() {
           <div className="relative bg-[#fdfaf6] border border-slate-600 p-6 md:p-8 pb-8 shadow-xl flex flex-col items-center"
             style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 36px), calc(100% - 36px) 100%, 0 100%)' }}>
 
-            <h2 className="text-3xl font-bold text-slate-800 tracking-tight pb-2 mb-2 inline-block rounded-sm transform -rotate-1">
-              {isLogin ? "STUDY AGREEMENT" : "JOIN THE NEST"}
+            <h2 className="text-3xl font-bold text-slate-800 tracking-tight pb-2 mb-2 inline-block rounded-sm transform -rotate-1 font-sans">
+              {isLogin ? t("auth.studyAgreementTitle") : t("auth.joinTheNestTitle")}
             </h2>
 
             <div className="text-center font-hand text-slate-700 text-lg leading-relaxed mb-4 max-w-[320px]">
-              {isLogin ? "By signing in, you agree to embark on a journey of " : "Create an account to embark on a journey of "}
-              <span className="bg-purple-200/50 px-1 rounded inline-block transform -rotate-1">learning, growth and knowledge.</span>
+              {isLogin ? t("auth.loginSubtitleLine1") : t("auth.signupSubtitleLine1")}
+              <span className="bg-purple-200/50 px-1 rounded inline-block transform -rotate-1">{t("auth.subtitleHighlight")}</span>
             </div>
 
             {/* Small star under subtitle */}
@@ -101,20 +104,20 @@ function AuthPageContentInner() {
 
               {!isLogin && (
                 <div className="w-full">
-                  <label className="block text-sm font-hand text-slate-700 mb-1 pl-1">Full Name</label>
+                  <label className="block text-sm font-hand text-slate-700 mb-1 pl-1 rtl:pl-0 rtl:pr-1">{t("auth.fullNameLabel")}</label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 left-0 pl-4 rtl:left-auto rtl:right-0 rtl:pl-0 rtl:pr-4 flex items-center pointer-events-none">
                       <svg className="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                     </div>
                     <input
                       type="text"
-                      placeholder="Enter your full name"
+                      placeholder={t("auth.fullNamePlaceholder")}
                       value={name}
                       onChange={(e) => {
                         setName(e.target.value);
                         handleInputInteraction(e);
                       }}
-                      className="w-full pl-11 pr-4 py-2 bg-transparent border border-slate-400 rounded-lg text-slate-800 font-sans focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                      className="w-full pl-11 pr-4 rtl:pl-4 rtl:pr-11 py-2 bg-transparent border border-slate-400 rounded-lg text-slate-800 font-sans focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                       onFocus={handleInputFocus}
                       onBlur={handleInputBlur}
                       onClick={handleInputInteraction}
@@ -126,20 +129,20 @@ function AuthPageContentInner() {
               )}
 
               <div className="w-full">
-                <label className="block text-sm font-hand text-slate-700 mb-1 pl-1">Email</label>
+                <label className="block text-sm font-hand text-slate-700 mb-1 pl-1 rtl:pl-0 rtl:pr-1">{t("auth.emailLabel")}</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <div className="absolute inset-y-0 left-0 pl-4 rtl:left-auto rtl:right-0 rtl:pl-0 rtl:pr-4 flex items-center pointer-events-none">
                     <svg className="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                   </div>
                   <input
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder={t("auth.emailPlaceholder")}
                     value={email}
                     onChange={(e) => {
                       setEmail(e.target.value);
                       handleInputInteraction(e);
                     }}
-                    className="w-full pl-11 pr-4 py-2 bg-transparent border border-slate-400 rounded-lg text-slate-800 font-sans focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                    className="w-full pl-11 pr-4 rtl:pl-4 rtl:pr-11 py-2 bg-transparent border border-slate-400 rounded-lg text-slate-800 font-sans focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                     onFocus={handleInputFocus}
                     onBlur={handleInputBlur}
                     onClick={handleInputInteraction}
@@ -150,20 +153,20 @@ function AuthPageContentInner() {
               </div>
 
               <div className="w-full">
-                <label className="block text-sm font-hand text-slate-700 mb-1 pl-1">Password</label>
+                <label className="block text-sm font-hand text-slate-700 mb-1 pl-1 rtl:pl-0 rtl:pr-1">{t("auth.passwordLabel")}</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <div className="absolute inset-y-0 left-0 pl-4 rtl:left-auto rtl:right-0 rtl:pl-0 rtl:pr-4 flex items-center pointer-events-none">
                     <svg className="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                   </div>
                   <input
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
+                    placeholder={t("auth.passwordPlaceholder")}
                     value={password}
                     onChange={(e) => {
                       setPassword(e.target.value);
                       handleInputInteraction(e);
                     }}
-                    className="w-full pl-11 pr-10 py-2 bg-transparent border border-slate-400 rounded-lg text-slate-800 font-sans focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                    className="w-full pl-11 pr-10 rtl:pl-10 rtl:pr-11 py-2 bg-transparent border border-slate-400 rounded-lg text-slate-800 font-sans focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                     onFocus={handleInputFocus}
                     onBlur={handleInputBlur}
                     onClick={handleInputInteraction}
@@ -171,7 +174,7 @@ function AuthPageContentInner() {
                     onKeyDown={handleInputInteraction}
                   />
                   <div
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer"
+                    className="absolute inset-y-0 right-0 pr-4 rtl:right-auto rtl:left-0 rtl:pr-0 rtl:pl-4 flex items-center cursor-pointer"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
@@ -190,27 +193,27 @@ function AuthPageContentInner() {
 
               {!isLogin && (
                 <div className="w-full">
-                  <label className="block text-sm font-hand text-slate-700 mb-1 pl-1">Repeat Password</label>
+                  <label className="block text-sm font-hand text-slate-700 mb-1 pl-1 rtl:pl-0 rtl:pr-1">{t("auth.repeatPasswordLabel")}</label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 left-0 pl-4 rtl:left-auto rtl:right-0 rtl:pl-0 rtl:pr-4 flex items-center pointer-events-none">
                       <svg className="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                     </div>
                     <input
                       type={showRepeatPassword ? "text" : "password"}
-                      placeholder="Repeat your password"
+                      placeholder={t("auth.repeatPasswordPlaceholder")}
                       value={repeatPassword}
                       onChange={(e) => {
                         setRepeatPassword(e.target.value);
                         handleInputInteraction(e);
                       }}
-                      className="w-full pl-11 pr-10 py-2 bg-transparent border border-slate-400 rounded-lg text-slate-800 font-sans focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                      className="w-full pl-11 pr-10 rtl:pl-10 rtl:pr-11 py-2 bg-transparent border border-slate-400 rounded-lg text-slate-800 font-sans focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                       onFocus={handleInputFocus}
                       onBlur={handleInputBlur}
                       onClick={handleInputInteraction}
                       onKeyUp={handleInputInteraction}
                     />
                     <div 
-                      className="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer"
+                      className="absolute inset-y-0 right-0 pr-4 rtl:right-auto rtl:left-0 rtl:pr-0 rtl:pl-4 flex items-center cursor-pointer"
                       onClick={() => setShowRepeatPassword(!showRepeatPassword)}
                     >
                       {showRepeatPassword ? (
@@ -233,19 +236,19 @@ function AuthPageContentInner() {
               {oauthError && (
                 <div className="text-red-600 text-sm font-semibold text-center bg-red-50 p-2.5 rounded border border-red-200 transform rotate-[-0.5deg]">
                   {oauthError === "EmailUsedLocally"
-                    ? "This email is registered locally. Please sign in with your password."
+                    ? t("auth.emailUsedLocallyError")
                     : oauthError === "AccessDenied"
-                    ? "Access denied. If using Google, make sure your email is added under 'Test Users' in your Google Cloud Console. If using GitHub, ensure your email is set to public."
-                    : `Authentication failed: ${oauthError}`}
+                    ? t("auth.accessDeniedError")
+                    : t("auth.authFailedError").replace("{error}", oauthError)}
                 </div>
               )}
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#5b73b5] hover:bg-blue-700 text-white py-2 rounded-full font-medium transition-all shadow-md mt-4 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full bg-[#5b73b5] hover:bg-blue-700 text-white py-2 rounded-full font-medium transition-all shadow-md mt-4 disabled:opacity-70 disabled:cursor-not-allowed uppercase"
               >
-                {loading ? "Processing..." : (isLogin ? "Sign In" : "Sign Up")}
+                {loading ? t("auth.processingButton") : (isLogin ? t("auth.signInButton") : t("auth.signUpButton"))}
               </button>
             </form>
 
@@ -255,23 +258,23 @@ function AuthPageContentInner() {
             <div className="w-full mt-8 flex justify-between px-2">
               {/* Learner Signature */}
               <div className="flex flex-col items-center justify-end relative w-[45%]">
-                <span className="absolute left-[-15px] bottom-6 text-slate-800 font-hand text-lg">x</span>
-                <div className="absolute top-[-20px] left-4 transform text-blue-500 opacity-80 pointer-events-none scale-125">
+                <span className="absolute left-[-15px] rtl:left-auto rtl:right-[-15px] bottom-6 text-slate-800 font-hand text-lg">x</span>
+                <div className="absolute top-[-20px] left-4 rtl:left-auto rtl:right-4 transform text-blue-500 opacity-80 pointer-events-none scale-125">
                   <svg width="60" height="20" viewBox="0 0 100 40" fill="none" stroke="currentColor" strokeWidth="2.5" className="font-hand" style={{ strokeLinecap: 'round', strokeLinejoin: 'round' }}>
                     <path d="M5,35 Q10,10 15,30 T25,35 Q30,15 35,30 T45,35 Q50,20 55,30 T65,35" />
                   </svg>
                 </div>
                 <div className="w-full border-b border-slate-600"></div>
-                <span className="text-sm font-hand text-slate-700 mt-1">Learner</span>
+                <span className="text-sm font-hand text-slate-700 mt-1">{t("auth.learnerSignature")}</span>
               </div>
 
               {/* Date Signature */}
               <div className="flex flex-col items-center justify-end relative w-[45%]">
                 <span className="absolute bottom-6 font-hand text-slate-800 text-lg transform -rotate-2" suppressHydrationWarning>
-                  {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  {new Date().toLocaleDateString(isRTL ? 'fa-IR' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </span>
                 <div className="w-full border-b border-slate-600" ref={defaultPenContainerRef}></div>
-                <span className="text-sm font-hand text-slate-700 mt-1">Date</span>
+                <span className="text-sm font-hand text-slate-700 mt-1">{t("auth.dateSignature")}</span>
               </div>
             </div>
           </div>
@@ -283,7 +286,7 @@ function AuthPageContentInner() {
           </div>
 
           {/* Folded Corner Dog-Ear */}
-          <div className="absolute bottom-[0px] right-[0px] w-10 h-10 bg-[#fdfaf6] border-l border-t border-slate-500 shadow-[-2px_-2px_4px_rgba(0,0,0,0.15)] z-20"
+          <div className="absolute bottom-[0px] right-[0px] rtl:right-auto rtl:left-[0px] w-10 h-10 bg-[#fdfaf6] border-l border-t border-slate-500 shadow-[-2px_-2px_4px_rgba(0,0,0,0.15)] z-20"
             style={{ clipPath: 'polygon(100% 0, 0 100%, 100% 100%)', borderBottomRightRadius: '6px' }}>
           </div>
 
@@ -297,8 +300,8 @@ function AuthPageContentInner() {
             </div>
             {/* Note */}
             <div className="w-[200px] bg-[#f9ebc7] p-3 shadow-md border border-[#e6d3a8] relative">
-              <p className="font-hand text-slate-800 text-center leading-tight">
-                &quot;The more you learn,<br />the more you earn.&quot;
+              <p className="font-hand text-slate-800 text-center leading-tight whitespace-pre-line">
+                {t("auth.quoteText")}
               </p>
               <div className="absolute bottom-2 right-2 text-slate-600">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -338,6 +341,7 @@ function AuthPageContentInner() {
 }
 
 export default function AuthPageContent() {
+  const { t } = useLanguage();
   return (
     <Suspense fallback={
       <div className="relative min-h-screen flex flex-col items-center justify-center overflow-x-hidden p-8 bg-[#fdfaf6]">
@@ -347,8 +351,8 @@ export default function AuthPageContent() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
             </svg>
           </div>
-          <h3 className="font-sans text-xl font-bold text-slate-800 uppercase tracking-wider">Loading Nest...</h3>
-          <p className="font-hand text-[19px] text-slate-600 mt-2">Preparing study agreement...</p>
+          <h3 className="font-sans text-xl font-bold text-slate-800 uppercase tracking-wider">{t("auth.loadingTitle")}</h3>
+          <p className="font-hand text-[19px] text-slate-600 mt-2">{t("auth.loadingSubtitle")}</p>
         </div>
       </div>
     }>

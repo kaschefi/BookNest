@@ -1,11 +1,14 @@
 import { signIn } from "next-auth/react";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function AuthSocialLogins() {
+  const { t } = useLanguage();
+
   return (
     <>
       <div className="w-full mt-4 flex items-center justify-center relative">
         <div className="absolute w-full border-t border-slate-300"></div>
-        <span className="bg-[#fdfaf6] px-4 text-xs font-bold text-slate-800 z-10">or continue with</span>
+        <span className="bg-[#fdfaf6] px-4 text-xs font-bold text-slate-800 z-10">{t("auth.orContinueWith")}</span>
       </div>
 
       <div className="flex gap-4 mt-4">

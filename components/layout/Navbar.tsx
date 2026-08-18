@@ -17,7 +17,7 @@ export default function Navbar({ toggleSidebar, hideSidebarButton, hideLogo }: {
     const isResourcesActive = pathname ? pathname.startsWith("/resources") : false;
 
     return (
-        <nav className="relative z-20 w-full max-w-7xl flex justify-between items-center py-4">
+        <nav dir="ltr" className="relative z-20 w-full max-w-7xl flex justify-between items-center py-4">
             <div className="flex items-center gap-4">
                 {toggleSidebar && (
                     hideSidebarButton ? (
